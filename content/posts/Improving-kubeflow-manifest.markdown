@@ -39,7 +39,7 @@ Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
 kfctl apply -V -f https://raw.githubusercontent.com/jazzsir/manifests/v1.0.2-branch/kfdef/kfctl_istio_dex.v1.0.2.jazzsir.yaml
 ```
 
-- nodeaffinity(kubernetes.io/nodetype:kubeflow) 적용
+- nodeaffinity `kubernetes.io/nodetype:kubeflow` 적용
 
 ```
 kfctl apply -V -f https://raw.githubusercontent.com/jazzsir/manifests/v1.0.2-branch/kfdef/kfctl_istio_dex.v1.0.2.nodeaffinity.yaml
