@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+
+
+
+
+
+<title>Using SR-IOV on OpenStack | Jazzsir&#39;s blog</title>
+
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content='BIOS 설정 Enable Intel VT-d in BIOS
+네트워크 설정  SR-IOV 관련 인터페이스 ONBOOT를 yes로 설정  /etc/sysconfig/network-scripts/ifcfg-ens1f0 TYPE=Ethernet BOOTPROTO=none NAME=ens1f0 DEVICE=ens1f0 ONBOOT=yes NM_CONTROLLED=no USERCTL=no /etc/sysconfig/network-scripts/ifcfg-ens4f0 TYPE=Ethernet BOOTPROTO=none NAME=ens4f0 DEVICE=ens4f0 ONBOOT=yes NM_CONTROLLED=no USERCTL=no [root@overcloud-compute-3 network-scripts]# cat ifcfg-ens1f1 TYPE=Ethernet BOOTPROTO=none NAME=ens1f1 DEVICE=ens1f1 ONBOOT=yes NM_CONTROLLED=no USERCTL=no [root@overcloud-compute-3 network-scripts]# cat ifcfg-ens4f1 TYPE=Ethernet BOOTPROTO=none NAME=ens4f1 DEVICE=ens4f1 ONBOOT=yes NM_CONTROLLED=no USERCTL=no  Compute Node PCI Vendor/Product ID 조회  [root@overcloud-compute-3 ~]# ethtool -i ens1f1 driver: ixgbe version: 4.'>
+<meta name="keywords" content='kubeflow, deep learning, kubernetes, openstack, distributed traning, operator'>
+<meta name="msapplication-TileColor" content="#b91d47">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="canonical" href="https://jazzsir.github.io/posts/using-sr-iov-on-openstack/" />
+<link rel="apple-touch-icon" sizes="180x180" href='/apple-touch-icon.png'>
+<link rel="icon" type="image/png" sizes="32x32" href='/favicon-32x32.png'>
+<link rel="icon" type="image/png" sizes="16x16" href='/favicon-16x16.png'>
+<link rel="manifest" href='/site.webmanifest'>
+<link rel="mask-icon" href='/safari-pinned-tab.svg' color="#696969">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+
+<meta property="og:title" content="Using SR-IOV on OpenStack" />
+<meta property="og:description" content="BIOS 설정 Enable Intel VT-d in BIOS
+네트워크 설정  SR-IOV 관련 인터페이스 ONBOOT를 yes로 설정  /etc/sysconfig/network-scripts/ifcfg-ens1f0 TYPE=Ethernet BOOTPROTO=none NAME=ens1f0 DEVICE=ens1f0 ONBOOT=yes NM_CONTROLLED=no USERCTL=no /etc/sysconfig/network-scripts/ifcfg-ens4f0 TYPE=Ethernet BOOTPROTO=none NAME=ens4f0 DEVICE=ens4f0 ONBOOT=yes NM_CONTROLLED=no USERCTL=no [root@overcloud-compute-3 network-scripts]# cat ifcfg-ens1f1 TYPE=Ethernet BOOTPROTO=none NAME=ens1f1 DEVICE=ens1f1 ONBOOT=yes NM_CONTROLLED=no USERCTL=no [root@overcloud-compute-3 network-scripts]# cat ifcfg-ens4f1 TYPE=Ethernet BOOTPROTO=none NAME=ens4f1 DEVICE=ens4f1 ONBOOT=yes NM_CONTROLLED=no USERCTL=no  Compute Node PCI Vendor/Product ID 조회  [root@overcloud-compute-3 ~]# ethtool -i ens1f1 driver: ixgbe version: 4." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jazzsir.github.io/posts/using-sr-iov-on-openstack/" />
+<meta property="article:published_time" content="2016-03-05T00:00:00+00:00" />
+<meta property="article:modified_time" content="2016-03-05T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Using SR-IOV on OpenStack"/>
+<meta name="twitter:description" content="BIOS 설정 Enable Intel VT-d in BIOS
+네트워크 설정  SR-IOV 관련 인터페이스 ONBOOT를 yes로 설정  /etc/sysconfig/network-scripts/ifcfg-ens1f0 TYPE=Ethernet BOOTPROTO=none NAME=ens1f0 DEVICE=ens1f0 ONBOOT=yes NM_CONTROLLED=no USERCTL=no /etc/sysconfig/network-scripts/ifcfg-ens4f0 TYPE=Ethernet BOOTPROTO=none NAME=ens4f0 DEVICE=ens4f0 ONBOOT=yes NM_CONTROLLED=no USERCTL=no [root@overcloud-compute-3 network-scripts]# cat ifcfg-ens1f1 TYPE=Ethernet BOOTPROTO=none NAME=ens1f1 DEVICE=ens1f1 ONBOOT=yes NM_CONTROLLED=no USERCTL=no [root@overcloud-compute-3 network-scripts]# cat ifcfg-ens4f1 TYPE=Ethernet BOOTPROTO=none NAME=ens4f1 DEVICE=ens4f1 ONBOOT=yes NM_CONTROLLED=no USERCTL=no  Compute Node PCI Vendor/Product ID 조회  [root@overcloud-compute-3 ~]# ethtool -i ens1f1 driver: ixgbe version: 4."/>
+
+<meta itemprop="name" content="">
+<meta itemprop="description" content="">
+    
+    
+    
+    
+    
+    <link rel="stylesheet" href='/css/style.css'>
+
+    
+
+</head>
+<body><header id="navigation" class="p-navigation">
+    <div class="p-navigation__row">
+        <div class="p-navigation__banner">
+            <div class="p-navigation__logo">
+                <a class="p-navigation__link u-vertically-center p-link--logo" href="https://jazzsir.github.io/">
+                    Home
+                </a>
+            </div>
+            
+            <a href="#navigation" class="p-navigation__toggle--open" title="menu">
+                <i class="p-icon--menu"></i>
+            </a>
+            <a href="#navigation-closed" class="p-navigation__toggle--close" title="close menu">
+                <i class="p-icon--close"></i>
+            </a>
+        </div>
+
+        <nav class="p-navigation__nav">
+            <span class="u-off-screen">
+                <a href="#main-content">Jump to main content</a>
+            </span>
+
+            <ul class="p-navigation__items" role="menu">
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/authors">Authors</a>
+                </li>
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/categories">Categories</a>
+                </li>
+                
+            </ul>
+
+            
+            <form class="p-search-box" action="https://www.google.com/search" target="_blank">
+    <input type="search" class="p-search-box__input" name="q" placeholder='Search'
+        required="" aria-label="Query">
+    <input type="hidden" name="sitesearch" value="https://jazzsir.github.io/">
+    <button type="reset" class="p-search-box__reset" alt="reset" aria-label="Reset">
+        <i class="p-icon--close"></i>
+    </button>
+    <button type="submit" class="p-search-box__button" alt="search" aria-label="Search">
+        <i class="p-icon--search"></i>
+    </button>
+</form>
+            
+        </nav>
+    </div>
+</header>
+<div id="main-content">
+<header class="p-strip page-banner">
+    <div class="row">
+        <h1>Using SR-IOV on OpenStack</h1>
+    </div>
+
+    
+
+<div class="row">
+
+    
+    <div class="col-8">
+        
+
+
+
+
+<div class="p-media-object">
+
+    
+
+    <div class="p-media-object__details">
+
+        
+
+        
+        <p class="p-media-object__content">
+            <span class="u-capitalized">on</span>
+            2016-03-05
+        </p>
+        
+
+    </div>
+</div>
+
+
+    </div>
+    
+
+    
+    <div class="col-4  col--share-links ">
+        <ul class="p-inline-list-icons p-inline-list-icons--share-links u-no-padding--left u-no-margin--left u-unselectable">
+    <li class="p-inline-list__item">
+        <i class="p-icon--share"></i>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--facebook" title='Share on Facebook' target="_blank"
+            rel="noreferrer" href="//www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fjazzsir.github.io%2fposts%2fusing-sr-iov-on-openstack%2f">
+            Facebook
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--twitter" title='Share on Twitter' target="_blank"
+            rel="noreferrer" href="http://twitter.com/share?text=Using%20SR-IOV%20on%20OpenStack&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2fusing-sr-iov-on-openstack%2f">
+            Twitter
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--linkedin" title='Share on LinkedIn' target="_blank"
+            rel="noreferrer"
+            href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2fusing-sr-iov-on-openstack%2f&amp;title=Using%20SR-IOV%20on%20OpenStack">
+            LinkedIn
+        </a>
+    </li>
+</ul>
+    </div>
+    
+
+</div>
+
+
+
+
+<div class="row">
+    <div class="col-12">
+        
+<a href="https://jazzsir.github.io/tags/dpdk/">#DPDK</a>&ensp;
+
+<a href="https://jazzsir.github.io/tags/sr-iov/">#SR-IOV</a>&ensp;
+
+    </div>
+</div>
+
+</header>
+
+<section class="p-strip is-shallow">
+    <main class="row post-content">
+        <h2 id="bios-설정">BIOS 설정</h2>
+<p>Enable Intel VT-d in BIOS</p>
+<h2 id="네트워크-설정">네트워크 설정</h2>
+<ul>
+<li>SR-IOV 관련 인터페이스 ONBOOT를 yes로 설정</li>
+</ul>
+<pre><code>/etc/sysconfig/network-scripts/ifcfg-ens1f0
+TYPE=Ethernet
+BOOTPROTO=none
+NAME=ens1f0
+DEVICE=ens1f0
+ONBOOT=yes
+NM_CONTROLLED=no
+USERCTL=no
+
+/etc/sysconfig/network-scripts/ifcfg-ens4f0
+TYPE=Ethernet
+BOOTPROTO=none
+NAME=ens4f0
+DEVICE=ens4f0
+ONBOOT=yes
+NM_CONTROLLED=no
+USERCTL=no
+
+[root@overcloud-compute-3 network-scripts]# cat ifcfg-ens1f1
+TYPE=Ethernet
+BOOTPROTO=none
+NAME=ens1f1
+DEVICE=ens1f1
+ONBOOT=yes
+NM_CONTROLLED=no
+USERCTL=no
+
+[root@overcloud-compute-3 network-scripts]# cat ifcfg-ens4f1
+TYPE=Ethernet
+BOOTPROTO=none
+NAME=ens4f1
+DEVICE=ens4f1
+ONBOOT=yes
+NM_CONTROLLED=no
+USERCTL=no
+</code></pre><ul>
+<li>Compute Node PCI Vendor/Product ID 조회</li>
+</ul>
+<pre><code>[root@overcloud-compute-3 ~]# ethtool -i ens1f1
+driver: ixgbe
+version: 4.0.1-k-rh7.1
+firmware-version: 0x18f60001
+bus-info: 0000:04:00.1
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+supports-priv-flags: no
+
+[root@overcloud-compute-3 ~]# ethtool -i ens4f1
+driver: ixgbe
+version: 4.0.1-k-rh7.1
+firmware-version: 0x8000028d
+bus-info: 0000:21:00.1
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+supports-priv-flags: no
+
+[root@overcloud-compute-3 ~]# lspci -nn | grep Eth
+04:00.0 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+04:00.1 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+21:00.0 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+21:00.1 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+</code></pre><ul>
+<li>SR-IOV VF 생성 설정</li>
+</ul>
+<pre><code>[root@overcloud-compute-3 ~]# modinfo ixgbe
+filename:       /lib/modules/3.10.0-229.14.1.el7.x86_64/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+version:        4.0.1-k-rh7.1
+license:        GPL
+description:    Intel(R) 10 Gigabit PCI Express Network Driver
+author:         Intel Corporation, &lt;linux.nics@intel.com&gt;
+rhelversion:    7.1
+srcversion:     D5B70A3E5E8A45DA6B20C73
+alias:          pci:v00008086d000015ABsv*sd*bc*sc*i*
+alias:          pci:v00008086d000015AAsv*sd*bc*sc*i*
+alias:          pci:v00008086d00001563sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001560sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000154Asv*sd*bc*sc*i*
+alias:          pci:v00008086d00001557sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001558sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000154Fsv*sd*bc*sc*i*
+alias:          pci:v00008086d0000154Dsv*sd*bc*sc*i*
+alias:          pci:v00008086d00001528sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010F8sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000151Csv*sd*bc*sc*i*
+alias:          pci:v00008086d00001529sv*sd*bc*sc*i*
+alias:          pci:v00008086d0000152Asv*sd*bc*sc*i*
+alias:          pci:v00008086d000010F9sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001514sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001507sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010FBsv*sd*bc*sc*i*
+alias:          pci:v00008086d00001517sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010FCsv*sd*bc*sc*i*
+alias:          pci:v00008086d000010F7sv*sd*bc*sc*i*
+alias:          pci:v00008086d00001508sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010DBsv*sd*bc*sc*i*
+alias:          pci:v00008086d000010F4sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010E1sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010F1sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010ECsv*sd*bc*sc*i*
+alias:          pci:v00008086d000010DDsv*sd*bc*sc*i*
+alias:          pci:v00008086d0000150Bsv*sd*bc*sc*i*
+alias:          pci:v00008086d000010C8sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010C7sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010C6sv*sd*bc*sc*i*
+alias:          pci:v00008086d000010B6sv*sd*bc*sc*i*
+depends:        mdio,ptp,dca
+intree:         Y
+vermagic:       3.10.0-229.14.1.el7.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        44:02:00:8F:2B:3F:DA:1F:6C:1C:64:BA:2C:10:BF:0C:FE:EC:AB:B7
+sig_hashalgo:   sha256
+parm:           max_vfs:Maximum number of virtual functions to allocate per physical function - default is zero and maximum value is 63 (uint)
+parm:           allow_unsupported_sfp:Allow unsupported and untested SFP+ modules on 82599-based adapters (uint)
+parm:           debug:Debug level (0=none,...,16=all) (int)
+</code></pre><pre><code>Edit /etc/modprobe.d/ixgbe.conf
+
+options ixgbe max_vfs=16
+</code></pre><pre><code>Edit /etc/sysconfig/grub
+
+GRUB_TIMEOUT=5
+GRUB_DEFAULT=saved
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT=&quot;console&quot;
+GRUB_CMDLINE_LINUX=&quot;no_timer_check crashkernel=auto console=ttyS0,115200n8 console=tty0 net.ifnames=1 rhgb quiet intel_iommu=on ixgbe.max_vfs=16&quot;
+GRUB_DISABLE_RECOVERY=&quot;true&quot;
+GRUB_PRELOAD_MODULES=lvm
+</code></pre><pre><code>Edit /etc/grub2.cfg
+
+...
+### BEGIN /etc/grub.d/10_linux ###
+menuentry 'Red Hat Enterprise Linux Server 7.1 (Maipo), with Linux 3.10.0-229.14.1.el7.x86_64' --class fedora --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-229.14.1.el7.x86_64-advanced-fa2ae704-b7dc-406b-8747-e6d6d59b0b39' {
+        load_video
+        set gfxpayload=keep
+        insmod gzio
+        insmod part_msdos
+        insmod xfs
+        set root='hd0,msdos2'
+        if [ x$feature_platform_search_hint = xy ]; then
+          search --no-floppy --fs-uuid --set=root --hint-bios=hd0,msdos2 --hint-efi=hd0,msdos2 --hint-baremetal=ahci0,msdos2  fa2ae704-b7dc-406b-8747-e6d6d59b0b39
+        else
+          search --no-floppy --fs-uuid --set=root fa2ae704-b7dc-406b-8747-e6d6d59b0b39
+        fi
+        linux16 /boot/vmlinuz-3.10.0-229.14.1.el7.x86_64 root=UUID=fa2ae704-b7dc-406b-8747-e6d6d59b0b39 ro no_timer_check crashkernel=auto console=ttyS0,115200n8 console=tty0 net.ifnames=1 rhgb quiet intel_iommu=on ixgbe.max_vfs=16
+        initrd16 /boot/initramfs-3.10.0-229.14.1.el7.x86_64.img
+}
+menuentry 'Red Hat Enterprise Linux Server 7.1 (Maipo), with Linux 0-rescue-997aadf25d384ab2be3c52219f65056a' --class fedora --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-0-rescue-997aadf25d384ab2be3c52219f65056a-advanced-fa2ae704-b7dc-406b-8747-e6d6d59b0b39' {
+        load_video
+        insmod gzio
+        insmod part_msdos
+        insmod xfs
+        set root='hd0,msdos2'
+        if [ x$feature_platform_search_hint = xy ]; then
+          search --no-floppy --fs-uuid --set=root --hint-bios=hd0,msdos2 --hint-efi=hd0,msdos2 --hint-baremetal=ahci0,msdos2  fa2ae704-b7dc-406b-8747-e6d6d59b0b39
+        else
+          search --no-floppy --fs-uuid --set=root fa2ae704-b7dc-406b-8747-e6d6d59b0b39
+        fi
+        linux16 /boot/vmlinuz-0-rescue-997aadf25d384ab2be3c52219f65056a root=UUID=fa2ae704-b7dc-406b-8747-e6d6d59b0b39 ro no_timer_check crashkernel=auto console=ttyS0,115200n8 console=tty0 net.ifnames=1 rhgb quiet intel_iommu=on ixgbe.max_vfs=16
+        initrd16 /boot/initramfs-0-rescue-997aadf25d384ab2be3c52219f65056a.img
+}
+...
+</code></pre><pre><code>$ grub2-mkconfig -o /boot/grub2/grub.cfg
+$ reboot
+$ modprobe -r ixgbe
+$ modprobe ixgbe max_vfs=16
+</code></pre><ul>
+<li>VF 생성 확인</li>
+</ul>
+<pre><code>[root@overcloud-compute-3 ~]# lspci -nn | grep Eth
+03:00.0 Ethernet controller [0200]: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe [14e4:1657] (rev 01)
+03:00.1 Ethernet controller [0200]: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe [14e4:1657] (rev 01)
+03:00.2 Ethernet controller [0200]: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe [14e4:1657] (rev 01)
+03:00.3 Ethernet controller [0200]: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe [14e4:1657] (rev 01)
+04:00.0 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+04:00.1 Ethernet controller [0200]: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection [8086:10fb] (rev 01)
+04:10.0 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:10.1 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:10.2 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:10.3 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:10.4 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:10.5 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:10.6 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:10.7 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:11.0 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+04:11.1 Ethernet controller [0200]: Intel Corporation 82599 Ethernet Controller Virtual Function [8086:10ed] (rev 01)
+...
+</code></pre><ul>
+<li>Edit /etc/nova/nova.conf</li>
+</ul>
+<p>Intel NIC의 경우, 10G (2 Port) 에서 짝수 번호는 첫 번째 포트, 홀수는 두 번째 포트를 의미함
+여기서, 첫 번째 포트는 서비스 네트워크 용도로 사용하고 두 번째 포트는 Interwork (Hybrid) 네트워크 용도로 사용</p>
+<pre><code>...
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.0&quot;, &quot;physical_network&quot;:&quot;01service&quot;}
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.2&quot;, &quot;physical_network&quot;:&quot;01service&quot;}
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.4&quot;, &quot;physical_network&quot;:&quot;01service&quot;}
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.6&quot;, &quot;physical_network&quot;:&quot;01service&quot;}
+
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.1&quot;, &quot;physical_network&quot;:&quot;02interwork&quot;}
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.3&quot;, &quot;physical_network&quot;:&quot;02interwork&quot;}
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.5&quot;, &quot;physical_network&quot;:&quot;02interwork&quot;}
+pci_passthrough_whitelist={&quot;address&quot;:&quot;*:04:*.7&quot;, &quot;physical_network&quot;:&quot;02interwork&quot;}
+...
+
+[root@compute ~]# systemctl restart openstack-nova-compute
+</code></pre><ul>
+<li>Neutron Agent 설치 및 설정</li>
+</ul>
+<pre><code># ##Neutron SR-IOV Agent 설치
+# yum install openstack-neutron-sriov-nic-agent.noarc
+# systemctl enable neutron-sriov-nic-agent.service
+</code></pre><pre><code>Edit /etc/neutron/plugins/ml2/ml2_conf_sriov.ini
+
+[ml2_sriov]
+supported_pci_vendor_devs = 8086:10ed
+agent_required = True
+
+[sriov_nic]
+physical_device_mappings = 02interwork:ens1f0,02interwork:ens1f1
+exclude_devices =
+</code></pre><pre><code>Edit /usr/lib/systemd/system/neutron-sriov-nic-agent.service
+
+위에서 설정한 /etc/neutron/plugins/ml2/ml2_conf_sriov.ini 파일 추가
+
+[Unit]
+Description=OpenStack Neutron SR-IOV NIC Agent
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=neutron
+ExecStart=/usr/bin/neutron-sriov-nic-agent --config-file /usr/share/neutron/neutron-dist.conf --config-file /etc/neutron/neutron.conf --config-dir /etc/neutron/conf.d/common --config-dir /etc/neutron/conf.d/neutron-sriov-nic-agent --log-file /var/log/neutron/sriov-nic-agent.log --config-file /etc/neutron/plugins/ml2/ml2_conf_sriov.ini
+PrivateTmp=false
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+</code></pre><pre><code>Edit /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+
+[ovs]
+integration_bridge = br-int
+enable_tunneling=False
+
+[agent]
+polling_interval = 2
+l2_population = False
+arp_responder = False
+enable_distributed_routing = False
+
+[securitygroup]
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+</code></pre><pre><code>$ openstack-service restart neutron
+</code></pre>
+    </main>
+</section>
+
+
+<footer class="p-strip is-wrapper">
+    <div class="row">
+        <div class="p-article-pagination">
+    
+
+    
+
+    
+    <a class="p-article-pagination__link--next" href="https://jazzsir.github.io/posts/installing-kolla-kubernetes/">
+        <span class="p-article-pagination__label">Next</span>
+        <span class="p-article-pagination__title">
+            Installing Kolla-kubernetes
+        </span>
+    </a>
+    
+</div>
+    </div>
+</footer>
+
+
+
+<div class="p-strip u-no-padding--bottom is-shallow">
+    <div class="row">
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ok-ish-blog" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+</div>
+
+
+
+        </div><footer class="p-strip is-shallow page-footer">
+    <div class="row">
+        <div class="col-12  u-align--center">
+            <p>
+                © 2020 jazzsir&rsquo;s tech blog. Powered by <a href="https://github.com/gohugoio/hugo">Hugo</a>. Theme <a href="https://github.com/kongdivin/hugo-theme-okayish-blog#readme">Okayish Blog Hugo Theme</a>.
+            </p>
+        </div>
+    </div>
+</footer>
+
+
+
+
+</body>
+</html>

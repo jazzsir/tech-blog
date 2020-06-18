@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kubeflow on Jazzsir&#39;s blog</title>
+    <link>https://jazzsir.github.io/tags/kubeflow/</link>
+    <description>Recent content in Kubeflow on Jazzsir&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright> © 2020 jazzsir&#39;s tech blog. Powered by [Hugo](https://github.com/gohugoio/hugo). Theme [Okayish Blog Hugo Theme](https://github.com/kongdivin/hugo-theme-okayish-blog#readme).</copyright>
+    <lastBuildDate>Wed, 17 Jun 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://jazzsir.github.io/tags/kubeflow/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Improving Kubeflow kfctl_istio_dex.v1.0.2 manifest</title>
+      <link>https://jazzsir.github.io/posts/improving-kubeflow-manifest/</link>
+      <pubDate>Wed, 17 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/posts/improving-kubeflow-manifest/</guid>
+      <description>Kubeflow가 버전 1.0을 찍긴 했지만 아직은 부족한 부분이 좀(?) 있다. kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금까지 customizing했던 부분들을 적용하여 kubeflow/manifests 를 개선해 보았다.
+개선한 사항  Pipeline 0.5.1 로 업그레이드 KFServing 0.3 으로 업그레이드 kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround) nodeafinity 적용(kubeflow 배포 철학과는 맞지 않지만&amp;hellip;.) Application CR 빠진 부분 추가 중복 지정 부분(namespace 등) 삭제 minio vitualservice 추가  Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
+설치 방법 설치 방법은 기존과 같다.</description>
+    </item>
+    
+  </channel>
+</rss>

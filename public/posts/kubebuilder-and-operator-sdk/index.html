@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+
+
+
+
+
+<title>Kubebuilder and Operator-SDK Souce code 분석 | Jazzsir&#39;s blog</title>
+
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content='Kubernetes Operator/Controller 구현 방법 Kubernetes에서 Operator(또는 controller)를 구현 하려면 여러가지 방법이 있다.
+ API Server의 REST API(watch)를 이용하여 shell script로 구현: 가장 간단한 방법이나 오류 처리나 고급 기능을 이용하는데 한계가 있다. client-go library를 직접 이용: workqueue 구현이나 client, informers, listers, deep-copy 등의 기능들을 개발자 영역에서 모두 구현해야 하지만, 이러한 코드들을 자동으로 생성해주는 방법이 있으므로 사실 그렇게 어렵지는 않다. operator-sdk 또는 kubebuilder와 같은 SDK를 이용하는 방법: controller나 operator를 개발할 때, 가장 많이 사용하고 있는 방법이다.'>
+<meta name="keywords" content='kubeflow, deep learning, kubernetes, openstack, distributed traning, operator'>
+<meta name="msapplication-TileColor" content="#b91d47">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="canonical" href="https://jazzsir.github.io/posts/kubebuilder-and-operator-sdk/" />
+<link rel="apple-touch-icon" sizes="180x180" href='/apple-touch-icon.png'>
+<link rel="icon" type="image/png" sizes="32x32" href='/favicon-32x32.png'>
+<link rel="icon" type="image/png" sizes="16x16" href='/favicon-16x16.png'>
+<link rel="manifest" href='/site.webmanifest'>
+<link rel="mask-icon" href='/safari-pinned-tab.svg' color="#696969">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+
+<meta property="og:title" content="Kubebuilder and Operator-SDK Souce code 분석" />
+<meta property="og:description" content="Kubernetes Operator/Controller 구현 방법 Kubernetes에서 Operator(또는 controller)를 구현 하려면 여러가지 방법이 있다.
+ API Server의 REST API(watch)를 이용하여 shell script로 구현: 가장 간단한 방법이나 오류 처리나 고급 기능을 이용하는데 한계가 있다. client-go library를 직접 이용: workqueue 구현이나 client, informers, listers, deep-copy 등의 기능들을 개발자 영역에서 모두 구현해야 하지만, 이러한 코드들을 자동으로 생성해주는 방법이 있으므로 사실 그렇게 어렵지는 않다. operator-sdk 또는 kubebuilder와 같은 SDK를 이용하는 방법: controller나 operator를 개발할 때, 가장 많이 사용하고 있는 방법이다." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jazzsir.github.io/posts/kubebuilder-and-operator-sdk/" />
+<meta property="article:published_time" content="2019-06-12T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-06-12T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Kubebuilder and Operator-SDK Souce code 분석"/>
+<meta name="twitter:description" content="Kubernetes Operator/Controller 구현 방법 Kubernetes에서 Operator(또는 controller)를 구현 하려면 여러가지 방법이 있다.
+ API Server의 REST API(watch)를 이용하여 shell script로 구현: 가장 간단한 방법이나 오류 처리나 고급 기능을 이용하는데 한계가 있다. client-go library를 직접 이용: workqueue 구현이나 client, informers, listers, deep-copy 등의 기능들을 개발자 영역에서 모두 구현해야 하지만, 이러한 코드들을 자동으로 생성해주는 방법이 있으므로 사실 그렇게 어렵지는 않다. operator-sdk 또는 kubebuilder와 같은 SDK를 이용하는 방법: controller나 operator를 개발할 때, 가장 많이 사용하고 있는 방법이다."/>
+
+<meta itemprop="name" content="">
+<meta itemprop="description" content="">
+    
+    
+    
+    
+    
+    <link rel="stylesheet" href='/css/style.css'>
+
+    
+
+</head>
+<body><header id="navigation" class="p-navigation">
+    <div class="p-navigation__row">
+        <div class="p-navigation__banner">
+            <div class="p-navigation__logo">
+                <a class="p-navigation__link u-vertically-center p-link--logo" href="https://jazzsir.github.io/">
+                    Home
+                </a>
+            </div>
+            
+            <a href="#navigation" class="p-navigation__toggle--open" title="menu">
+                <i class="p-icon--menu"></i>
+            </a>
+            <a href="#navigation-closed" class="p-navigation__toggle--close" title="close menu">
+                <i class="p-icon--close"></i>
+            </a>
+        </div>
+
+        <nav class="p-navigation__nav">
+            <span class="u-off-screen">
+                <a href="#main-content">Jump to main content</a>
+            </span>
+
+            <ul class="p-navigation__items" role="menu">
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/authors">Authors</a>
+                </li>
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/categories">Categories</a>
+                </li>
+                
+            </ul>
+
+            
+            <form class="p-search-box" action="https://www.google.com/search" target="_blank">
+    <input type="search" class="p-search-box__input" name="q" placeholder='Search'
+        required="" aria-label="Query">
+    <input type="hidden" name="sitesearch" value="https://jazzsir.github.io/">
+    <button type="reset" class="p-search-box__reset" alt="reset" aria-label="Reset">
+        <i class="p-icon--close"></i>
+    </button>
+    <button type="submit" class="p-search-box__button" alt="search" aria-label="Search">
+        <i class="p-icon--search"></i>
+    </button>
+</form>
+            
+        </nav>
+    </div>
+</header>
+<div id="main-content">
+<header class="p-strip page-banner">
+    <div class="row">
+        <h1>Kubebuilder and Operator-SDK Souce code 분석</h1>
+    </div>
+
+    
+
+<div class="row">
+
+    
+    <div class="col-8">
+        
+
+
+
+
+<div class="p-media-object">
+
+    
+
+    <div class="p-media-object__details">
+
+        
+
+        
+        <p class="p-media-object__content">
+            <span class="u-capitalized">on</span>
+            2019-06-12
+        </p>
+        
+
+    </div>
+</div>
+
+
+    </div>
+    
+
+    
+    <div class="col-4  col--share-links ">
+        <ul class="p-inline-list-icons p-inline-list-icons--share-links u-no-padding--left u-no-margin--left u-unselectable">
+    <li class="p-inline-list__item">
+        <i class="p-icon--share"></i>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--facebook" title='Share on Facebook' target="_blank"
+            rel="noreferrer" href="//www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fjazzsir.github.io%2fposts%2fkubebuilder-and-operator-sdk%2f">
+            Facebook
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--twitter" title='Share on Twitter' target="_blank"
+            rel="noreferrer" href="http://twitter.com/share?text=Kubebuilder%20and%20Operator-SDK%20Souce%20code%20%eb%b6%84%ec%84%9d&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2fkubebuilder-and-operator-sdk%2f">
+            Twitter
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--linkedin" title='Share on LinkedIn' target="_blank"
+            rel="noreferrer"
+            href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2fkubebuilder-and-operator-sdk%2f&amp;title=Kubebuilder%20and%20Operator-SDK%20Souce%20code%20%eb%b6%84%ec%84%9d">
+            LinkedIn
+        </a>
+    </li>
+</ul>
+    </div>
+    
+
+</div>
+
+
+
+
+<div class="row">
+    <div class="col-12">
+        
+<a href="https://jazzsir.github.io/tags/operator/">#Operator</a>&ensp;
+
+<a href="https://jazzsir.github.io/tags/controller/">#Controller</a>&ensp;
+
+<a href="https://jazzsir.github.io/tags/operator-sdk/">#Operator-SDK</a>&ensp;
+
+<a href="https://jazzsir.github.io/tags/kubebuilder/">#Kubebuilder</a>&ensp;
+
+    </div>
+</div>
+
+</header>
+
+<section class="p-strip is-shallow">
+    <main class="row post-content">
+        <h2 id="kubernetes-operatorcontroller-구현-방법">Kubernetes Operator/Controller 구현 방법</h2>
+<p>Kubernetes에서 Operator(또는 controller)를 구현 하려면 여러가지 방법이 있다.</p>
+<ol>
+<li>API Server의 REST API(watch)를 이용하여 shell script로 구현: 가장 간단한 방법이나 오류 처리나 고급 기능을 이용하는데 한계가 있다.</li>
+<li>client-go library를 직접 이용: workqueue 구현이나 client, informers, listers, deep-copy 등의 기능들을 개발자 영역에서 모두 구현해야 하지만, 이러한 코드들을 자동으로 생성해주는 방법이 있으므로 사실 그렇게 어렵지는 않다.</li>
+<li>operator-sdk 또는 kubebuilder와 같은 SDK를 이용하는 방법: controller나 operator를 개발할 때, 가장 많이 사용하고 있는 방법이다.
+개발자가 API와 controller 이름을 지정해서 생성하면 기본적인 scaffold를 자동으로 생성해 줘서 개발자가 코딩해야 할 부분이 많이 줄어들었다.
+뿐만 아니라, client-go기반의 controller는 많은 기능들이 개발자 영역에서 구현 해야 했지만 controller-runtime같은 libraries로 개발자 영역에서 구현해야 할 기능들이 대폭 줄어 들었다.</li>
+<li>Metacontroller를 이용하여 구현: Custom Controller를 만드는 공통되는 부분을 캡슐화하는 API를 이용하여 kubernetes를 확장한다.</li>
+</ol>
+<p>여기에서는 현재 가장 많이 사용되고 있는 Kuberbuilder와 Operator-SDK에 대해서 살펴본다.</p>
+<h2 id="controller-runtime">controller-runtime</h2>
+<p>kubebuilder와 Operator-sdk 모두 controller-runtime기반인다. 그래서 소스코드 호환도 가능하다.
+SDK를 설명하기전에 이것부터 간략하게 살펴보자</p>
+<ul>
+<li>가장 핵심이 되는 부분은 아래 3가지 이다.
+<ul>
+<li>client.Client : k8s cluster에 CRUD 실행</li>
+<li>manager.Manager : shared dependencies 관리 예를 들어 cache, client 등</li>
+<li>reconcile.Reconcile : 현재 상태와 제공된 상태 비교하고 update 한다
+좀더 엄밀히 말하면 controller내에 개발자가 구현하는 Reconcile()은 reconcile.Reconcile() interface를 구현하는 것이고,
+imformer에 등록된 GVK에 변경이 일어나서 callback handler가 호출되고 여기서 Reconcile() method를 호출되고 여기서 client가 update하거나 사용자가 정의한 기능이 실행된다.<!-- raw HTML omitted -->
+그리고 clientset으로 해당 자원만 watching하는 informer를 사용하면 server에 부담을 줄 수 있다.
+그래서 cache를 이용해서 sharedinformer로 여러 resources를 watching 한다.</li>
+</ul>
+</li>
+</ul>
+<h2 id="kubebuilder">Kubebuilder</h2>
+<p>Kubebuilder는 Operator-sdk와 비교해서 더 많은 기능들이 있다.</p>
+<ol>
+<li>webhook을 지원한다. webhook도 결국엔 webserver이므로 kubebuilder로 쉽게 구현이 가능하다.</li>
+<li>Operator-sdk는 GVK가 하나의 controller만 사용할 수 있었는데, Kubebuilder는 이런 제약이 없다.</li>
+<li>Kustomize를 이용해서 한 방에 deploy가 가능하다.</li>
+</ol>
+<h3 id="version-2x">Version 2.x</h3>
+<p>Version 2.x는 1.x와 비교해서 많이 바뀌었다.</p>
+<ol>
+<li>디렉토리 구조가 한 단계씩 올라왔다.
+<ul>
+<li>이전엔 $WORKSPACE/pkg/controller, $WORKSPACE/pkg/api, $WORKSPACE/cmd/main.go 였는데
+$WORKSPACE/controller, $WORKSPACE/api, $WORKSPACE/main.go로 한 단계씩 올라왔다.</li>
+</ul>
+</li>
+<li>이전 버전은 controller의 Add()를 호출해서 reconcile을 등록했는데
+이제는 main.go 에서 controller.StarshipReconciler를 호출하고.. 호출하고.. 해서 아래로 등록됨
+<ul>
+<li>ctrl.NewControllerManagedBy(mgr).For(&amp;mygroupv1beta1.Mykind{}).Complete(r)</li>
+</ul>
+</li>
+<li>main.go 에서 manager 등록, scheme 등록, webHook 등록 등이 나눠져 있었는데 reconciler 등록 할때 모두 한꺼번에 다 한다.</li>
+</ol>
+<h3 id="소스코드-흐름v2x">소스코드 흐름(v2.x)</h3>
+<ul>
+<li>main.go()
+<ul>
+<li>
+<p>init()</p>
+<ul>
+<li>webappv1.AddToScheme(scheme)
+<ul>
+<li>api/v1/guestbook_types.go에서 아래로 등록한 scheme이 add됨.
+<ul>
+<li>SchemeBuilder.Register(&amp;Guestbook{}, &amp;GuestbookList{})</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{</p>
+<ul>
+<li>GetConfigOrDie()
+<ul>
+<li>.kube/config 파일 참조함</li>
+</ul>
+</li>
+<li>/sigs.k8s.io/controller-runtime/pkg/manager/manager.go
+<ul>
+<li>New()
+<ul>
+<li>예전 버전에서는 이부분을 inject라고 했는데 새로운 버전에서는 inject라는 용어는 사용안하는것 같음</li>
+<li>options = setOptionDefaults
+<ul>
+<li>Client, Scheme, leadelection, metrics관련, cacheFunc(informerMap관련 함수들)등등을 설정할 수 있는 함수를 등록</li>
+</ul>
+</li>
+<li>cache, err := options.NewCache
+<ul>
+<li>setOptionDefaults에서 지정한 함수로 Cache 생성</li>
+<li>controller-runtime/pkg/cache/cache.go
+<ul>
+<li>New(config&hellip;.)
+<ul>
+<li>GVK Group version Kind 별로 informer map을 만들어서 cache를 생성
+<ul>
+<li>이렇게 되면 GVK별로 informer가 처리되고 Shared dependencies 즉, cache가 생성됨</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>apiReader, err := client.New
+<ul>
+<li>API Server에 read할 client 생성함</li>
+</ul>
+</li>
+<li>writeObj, err := option.NewClient
+<ul>
+<li>API Server에 write할 client 생성함</li>
+</ul>
+</li>
+<li>resourceLock, err := options.newResourceLock
+<ul>
+<li>Leader election을 위한 resourceLock 생성</li>
+</ul>
+</li>
+<li>return &amp;controllerManager</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>err = ($controllers.MykindReconciler{Client: mgr.GetClient(), Log:&hellip;}).SetupWithManager(mgr)</p>
+<ul>
+<li>controller에 reconciler를 등록함</li>
+<li>mgr.GetClient()는 Apiserver에 write하기 위한 Client</li>
+<li>controllers/mykind_controller.go
+<ul>
+<li>SetupWithManager(mgr) -&gt; ctrl.NewControllerManagedBy(mgr).For(&amp;mygroupv1beta1.Mykind{}).Complete(r)
+<ul>
+<li>(controller-runtime/pkg/builder/build.go)</li>
+<li>NewControllerManagedBy(mgr): controller를 build하기 위해 <code>builder</code> package를 호출</li>
+<li>For(&amp;mygroupv1beta1.Mykind{}): mykind를 builder에 등록</li>
+<li>즉, Controller를 실제적으로 만드는 곳임</li>
+<li>Complete(r)
+<ul>
+<li>controller에 작성한 business logic 코드를 넣은 Reconciler를 등록함.</li>
+<li>Build()
+<ul>
+<li>blder.doConfig() : set the Config
+<ul>
+<li>controller에 manager의 config를 설정하는것 같다.</li>
+</ul>
+</li>
+<li>blder.doManager() : set the Manager</li>
+<li>blder.doController() : set the ControllermanagedBy
+<ul>
+<li>실제 manager에 controller를 등록함. 여기서 controller에 여러분이 작성한 business logic인 Reconciler가 등록</li>
+</ul>
+</li>
+<li>blder.doWebhook() : set the Webhook if needed
+<ul>
+<li>위의 <code>For</code>에서 등록한 GVK(Group, V?, Kind)인 mykind를 이용하여</li>
+<li>admission의 Mutating Webhook과 Validating Webhook을 이용 가능한듯함.</li>
+</ul>
+</li>
+<li>blder.doWatch() : set the Watch
+<ul>
+<li><code>For</code>에서 등록한 API type(mykind)를 watch할 수 있도록 work queue에 call back 함수인 handler를 등록함.</li>
+<li>예전 버전과 가장 큰 차이중에 하나입니다. 이전엔 contoller에서 Add를 구현해서 직접 watch 함수로 Watch할 GVK를 등록했었음, 근데 새로운 버전에서는 자동으로 지정함.</li>
+<li>doWatch()에 들어가 보면
+<ul>
+<li>등록한 GVK가 자동으로 등록됨.</li>
+<li>blder.managedObjects 를 찾아보면 Owns 로 등록되는데 이건 handler가 기본 파리미터러 등록되어 있음.</li>
+<li>blder.watchRequest 를 찾아보면 Watches로 등록되는데 이건 handler를 직접 지정할 수 있음.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>if err := mgr.Start(ctrl.SetupSignalHandler())</p>
+<ul>
+<li>controller-runtime/pkg/internal/manager/internal.go
+<ul>
+<li>Start()
+<ul>
+<li>startNonLeaderElectionRunnables()
+<ul>
+<li>controller-runtime/pkg/internal/controller/controller.go
+<ul>
+<li>Start()
+<ul>
+<li>여기에서 실제적으로 work queue를 만들고 hander를 등록해서 queue에 해당 GVK에
+해당하는 object가 들어오면(delete/update/add) reconciler에 전달할 수 있게 설정하는 곳.</li>
+<li>c.WaitForCacheSync(stop) - 반복문 돌면서 informerMap의 informer들이 API - Server와 sync될때까지 기다린다.</li>
+<li>go wait.Until(c.worker, c.JitterPeriod, stop)
+<ul>
+<li>func (c *Controller) worker() {
+<ul>
+<li>func (c *Controller) processNextWorkItem() bool {
+<ul>
+<li>왜 NextWork라고 했냐하면 Work가 여러개 일 수가 있기 때문입니다. 다시 말해서 하나의 controller에서 다수의 Reconcile()함수가 running될 수 있음.
+그래서 각 하나의 reconcile한수당 하나의 work라고 생각하시면 됨.</li>
+<li>func (c *Controller) reconcileHandler(obj interface{}) bool {
+<ul>
+<li>이제 이 변경이 되면 여기 handler가 호출됨.</li>
+<li>if req, ok = obj.(reconcile.Request); !ok {
+<ul>
+<li>queue에서 request를 가져와서</li>
+</ul>
+</li>
+<li>if result, err := c.Do.Reconcile(req); err != nil {
+<ul>
+<li>개발자가 만든 business logic이 있는 Reconcile()함수를 호출함.</li>
+<li>c.Queue.Forget(obj)
+<ul>
+<li>그리고 work queue에서 해당 object를 삭제.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="operator-sdk">Operator-SDK</h2>
+<h3 id="소스코드-흐름">소스코드 흐름</h3>
+<ul>
+<li>main.go()
+<ul>
+<li>leader.Become: operator를 HA로 줄 수도 있는데 하나의 operator만 운영될 수 있도록 설정하는 부분임. 이게 실행되면 configmap에 leader가 된 operator pod name이 설정된다.
+<ul>
+<li>operator-framework/operator-sdk/pkg/leader/leader.go
+<ul>
+<li>기존에 operator가 있다면 에러 리턴</li>
+<li>없으면 configmap에 등록하고 실행</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>manager.New(cfg, manager.Options{
+<ul>
+<li>controller-runtime/pkg/manager/manager.go
+<ul>
+<li>options = setOptionDefaults
+<ul>
+<li>option에 기본값 설정 - option(namespace, leadelection(bool), metricsBindAddress, cacheFunc, Client, Scheme(이건 default로 runtime.Scheme 이용) )으로 client를 만든다</li>
+</ul>
+</li>
+<li>cache, err := options.NewCache
+<ul>
+<li>controller-runtime/pkg/cache/cache.go
+<ul>
+<li>New(config&hellip;.)
+<ul>
+<li>GVK Group version Kind 별로 informer map을 만들어서 cache를 생성
+<ul>
+<li>이렇게 되면 GVK별로 informer가 처리되는것 같다.</li>
+<li>이렇게 해서 Shared dependencies 즉, cache를 생성하고. manager에 등록된다.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>apis.AddToScheme
+<ul>
+<li>pkg/apis/apis.go
+<ul>
+<li>apis.AddToScheme을 통해서 register.go로 통해 등록된 scheme이 등록된다.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>controller.AddToManager(mgr)
+<ul>
+<li>apis.controller.add_memcached.go
+<ul>
+<li>init()에서 등록한 controller를 등록함.</li>
+<li>f(m) = Add(mgr manager.Manager) 를 실행해서 controller 아래에 있는 모든 controller들을 등록함.</li>
+</ul>
+</li>
+<li>apis.controller.memcached.memcached_controller.go
+<ul>
+<li>Add(mgr manager.Manager)
+<ul>
+<li>newReconciler(mgr)
+<ul>
+<li>ReconcileMemcached 는 controller에 등록된 reconcile.Reconciler 인터페이스이다.
+그래서 아래의 ReconcileMemcached 구초체 함수인 Reconcile 함수가 자동적으로 controller에서 호출됨.</li>
+</ul>
+</li>
+<li>add(mgr, newReconciler(mgr))
+<ul>
+<li>controller.New
+<ul>
+<li>controller-runtime/pkg/controller/controller.go
+<ul>
+<li>SetFields()
+<ul>
+<li>options.Reconciler에 이전에 manager에 등록한 options들을 copy함.</li>
+<li>그리고 workqueue가 등록된 controller를 리턴함.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>c.Watch&hellip;&hellip;cachev1alpha1
+<ul>
+<li>controller-runtime/pkg/internal/controller/controller.go
+<ul>
+<li>Watch()
+<ul>
+<li>Controller에 kind와 handler를 등록하고</li>
+<li>controller-runtime/pkg/internal/source/source.go
+<ul>
+<li>kind에 해당하는 informer를 찾아서(없으면 새로 등록합니다. GVK 즉, Group version Kind 별로 informer map을 관리하고 있음)
+handler(add/delete/update), queue를 등록해서 watch를 실행함.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>mgr.Start(signals.SetupSignalHandler()) - SIGTERM , SIGINIT 등을 받아들이기 위함
+<ul>
+<li>controller-runtime/pkg/internal/manager/internal.go
+<ul>
+<li>Start()
+<ul>
+<li>start()
+<ul>
+<li>cm.cache.WaitForCacheSync(cm.internalStop)
+<ul>
+<li>반복문 돌면서 informerMap의 informer들이 API Server와 sync될때까지 기다린다.
+<ul>
+<li>controller-runtime/pkg/internal/controller/controller.go
+<ul>
+<li>Start()
+<ul>
+<li>여기서 변경이 일어나면,</li>
+<li>for c.processNextWorkItem() 으로 반복문 돌면서
+<ul>
+<li>if result, err := c.Do.Reconcile(req); 에서 변경이 일어나면 Reconcile을 호출함.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </main>
+</section>
+
+
+<footer class="p-strip is-wrapper">
+    <div class="row">
+        <div class="p-article-pagination">
+    
+
+    
+    <a class="p-article-pagination__link--previous" href="https://jazzsir.github.io/posts/tuning-kernel-for-kubernetes/">
+        <span class="p-article-pagination__label">Previous</span>
+        <span class="p-article-pagination__title">
+            Tuning kernel for kubernetes
+        </span>
+    </a>
+    
+
+    
+    <a class="p-article-pagination__link--next" href="https://jazzsir.github.io/posts/sriov-and-dpdk-packet-processing-acceleration-in-kubernetes/">
+        <span class="p-article-pagination__label">Next</span>
+        <span class="p-article-pagination__title">
+            SR-IOV and DPDK packet processing acceleration in kubernetes
+        </span>
+    </a>
+    
+</div>
+    </div>
+</footer>
+
+
+
+<div class="p-strip u-no-padding--bottom is-shallow">
+    <div class="row">
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ok-ish-blog" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+</div>
+
+
+
+        </div><footer class="p-strip is-shallow page-footer">
+    <div class="row">
+        <div class="col-12  u-align--center">
+            <p>
+                © 2020 jazzsir&rsquo;s tech blog. Powered by <a href="https://github.com/gohugoio/hugo">Hugo</a>. Theme <a href="https://github.com/kongdivin/hugo-theme-okayish-blog#readme">Okayish Blog Hugo Theme</a>.
+            </p>
+        </div>
+    </div>
+</footer>
+
+
+
+
+</body>
+</html>

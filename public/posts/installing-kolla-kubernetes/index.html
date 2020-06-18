@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+
+
+
+
+
+<title>Installing Kolla-kubernetes | Jazzsir&#39;s blog</title>
+
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content='kolla로 build된 Openstack components를 Kubernetes상에 전개하는 Kolla-kubernetes를 설치하는 방법을 정리하였다.
+기존 소스에서 아래를 수정 하였다.
+ All-in-one으로 설치되는 Charts를 Controller/Network/Compute node로 분할하여 Multi-node 로 설치되도록 Open vSwitch관련 Charts를 수정. Openstack Ocata(4.0.0)를 최신 release인 Pike(5.0.2)로 변경 적용. 안정적으로 구동될 수 있도록 기존의 많은 문제점들을 수정.  git clone {% highlight js %} git clone http://github.com/openstack/kolla-ansible git clone http://github.com/openstack/kolla-kubernetes {% endhighlight %}
+configure files replace 4.0.0 with 5.0.2 뭐 tools, orchestration 은 안해도 될것 같지만&hellip;.'>
+<meta name="keywords" content='kubeflow, deep learning, kubernetes, openstack, distributed traning, operator'>
+<meta name="msapplication-TileColor" content="#b91d47">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="canonical" href="https://jazzsir.github.io/posts/installing-kolla-kubernetes/" />
+<link rel="apple-touch-icon" sizes="180x180" href='/apple-touch-icon.png'>
+<link rel="icon" type="image/png" sizes="32x32" href='/favicon-32x32.png'>
+<link rel="icon" type="image/png" sizes="16x16" href='/favicon-16x16.png'>
+<link rel="manifest" href='/site.webmanifest'>
+<link rel="mask-icon" href='/safari-pinned-tab.svg' color="#696969">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+
+<meta property="og:title" content="Installing Kolla-kubernetes" />
+<meta property="og:description" content="kolla로 build된 Openstack components를 Kubernetes상에 전개하는 Kolla-kubernetes를 설치하는 방법을 정리하였다.
+기존 소스에서 아래를 수정 하였다.
+ All-in-one으로 설치되는 Charts를 Controller/Network/Compute node로 분할하여 Multi-node 로 설치되도록 Open vSwitch관련 Charts를 수정. Openstack Ocata(4.0.0)를 최신 release인 Pike(5.0.2)로 변경 적용. 안정적으로 구동될 수 있도록 기존의 많은 문제점들을 수정.  git clone {% highlight js %} git clone http://github.com/openstack/kolla-ansible git clone http://github.com/openstack/kolla-kubernetes {% endhighlight %}
+configure files replace 4.0.0 with 5.0.2 뭐 tools, orchestration 은 안해도 될것 같지만&hellip;." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jazzsir.github.io/posts/installing-kolla-kubernetes/" />
+<meta property="article:published_time" content="2017-10-21T00:00:00+00:00" />
+<meta property="article:modified_time" content="2017-10-21T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Installing Kolla-kubernetes"/>
+<meta name="twitter:description" content="kolla로 build된 Openstack components를 Kubernetes상에 전개하는 Kolla-kubernetes를 설치하는 방법을 정리하였다.
+기존 소스에서 아래를 수정 하였다.
+ All-in-one으로 설치되는 Charts를 Controller/Network/Compute node로 분할하여 Multi-node 로 설치되도록 Open vSwitch관련 Charts를 수정. Openstack Ocata(4.0.0)를 최신 release인 Pike(5.0.2)로 변경 적용. 안정적으로 구동될 수 있도록 기존의 많은 문제점들을 수정.  git clone {% highlight js %} git clone http://github.com/openstack/kolla-ansible git clone http://github.com/openstack/kolla-kubernetes {% endhighlight %}
+configure files replace 4.0.0 with 5.0.2 뭐 tools, orchestration 은 안해도 될것 같지만&hellip;."/>
+
+<meta itemprop="name" content="">
+<meta itemprop="description" content="">
+    
+    
+    
+    
+    
+    <link rel="stylesheet" href='/css/style.css'>
+
+    
+
+</head>
+<body><header id="navigation" class="p-navigation">
+    <div class="p-navigation__row">
+        <div class="p-navigation__banner">
+            <div class="p-navigation__logo">
+                <a class="p-navigation__link u-vertically-center p-link--logo" href="https://jazzsir.github.io/">
+                    Home
+                </a>
+            </div>
+            
+            <a href="#navigation" class="p-navigation__toggle--open" title="menu">
+                <i class="p-icon--menu"></i>
+            </a>
+            <a href="#navigation-closed" class="p-navigation__toggle--close" title="close menu">
+                <i class="p-icon--close"></i>
+            </a>
+        </div>
+
+        <nav class="p-navigation__nav">
+            <span class="u-off-screen">
+                <a href="#main-content">Jump to main content</a>
+            </span>
+
+            <ul class="p-navigation__items" role="menu">
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/authors">Authors</a>
+                </li>
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/categories">Categories</a>
+                </li>
+                
+            </ul>
+
+            
+            <form class="p-search-box" action="https://www.google.com/search" target="_blank">
+    <input type="search" class="p-search-box__input" name="q" placeholder='Search'
+        required="" aria-label="Query">
+    <input type="hidden" name="sitesearch" value="https://jazzsir.github.io/">
+    <button type="reset" class="p-search-box__reset" alt="reset" aria-label="Reset">
+        <i class="p-icon--close"></i>
+    </button>
+    <button type="submit" class="p-search-box__button" alt="search" aria-label="Search">
+        <i class="p-icon--search"></i>
+    </button>
+</form>
+            
+        </nav>
+    </div>
+</header>
+<div id="main-content">
+<header class="p-strip page-banner">
+    <div class="row">
+        <h1>Installing Kolla-kubernetes</h1>
+    </div>
+
+    
+
+<div class="row">
+
+    
+    <div class="col-8">
+        
+
+
+
+
+<div class="p-media-object">
+
+    
+
+    <div class="p-media-object__details">
+
+        
+
+        
+        <p class="p-media-object__content">
+            <span class="u-capitalized">on</span>
+            2017-10-21
+        </p>
+        
+
+    </div>
+</div>
+
+
+    </div>
+    
+
+    
+    <div class="col-4  col--share-links ">
+        <ul class="p-inline-list-icons p-inline-list-icons--share-links u-no-padding--left u-no-margin--left u-unselectable">
+    <li class="p-inline-list__item">
+        <i class="p-icon--share"></i>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--facebook" title='Share on Facebook' target="_blank"
+            rel="noreferrer" href="//www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fjazzsir.github.io%2fposts%2finstalling-kolla-kubernetes%2f">
+            Facebook
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--twitter" title='Share on Twitter' target="_blank"
+            rel="noreferrer" href="http://twitter.com/share?text=Installing%20Kolla-kubernetes&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2finstalling-kolla-kubernetes%2f">
+            Twitter
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--linkedin" title='Share on LinkedIn' target="_blank"
+            rel="noreferrer"
+            href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2finstalling-kolla-kubernetes%2f&amp;title=Installing%20Kolla-kubernetes">
+            LinkedIn
+        </a>
+    </li>
+</ul>
+    </div>
+    
+
+</div>
+
+
+
+
+<div class="row">
+    <div class="col-12">
+        
+<a href="https://jazzsir.github.io/tags/kubernetes/">#Kubernetes</a>&ensp;
+
+<a href="https://jazzsir.github.io/tags/openstack/">#Openstack</a>&ensp;
+
+    </div>
+</div>
+
+</header>
+
+<section class="p-strip is-shallow">
+    <main class="row post-content">
+        <p>kolla로 build된 Openstack components를
+Kubernetes상에 전개하는 Kolla-kubernetes를 설치하는 방법을 정리하였다.</p>
+<p>기존 소스에서 아래를 수정 하였다.</p>
+<ul>
+<li>All-in-one으로 설치되는 Charts를 Controller/Network/Compute node로 분할하여 Multi-node 로 설치되도록 Open vSwitch관련 Charts를 수정.</li>
+<li>Openstack Ocata(4.0.0)를 최신 release인 Pike(5.0.2)로 변경 적용.</li>
+<li>안정적으로 구동될 수 있도록 기존의 많은 문제점들을 수정.</li>
+</ul>
+<h2 id="git-clone">git clone</h2>
+<p>{% highlight js %}
+git clone <a href="http://github.com/openstack/kolla-ansible">http://github.com/openstack/kolla-ansible</a>
+git clone <a href="http://github.com/openstack/kolla-kubernetes">http://github.com/openstack/kolla-kubernetes</a>
+{% endhighlight %}</p>
+<h2 id="configure-files">configure files</h2>
+<h3 id="replace-400-with-502">replace 4.0.0 with 5.0.2</h3>
+<p>뭐 tools, orchestration 은 안해도 될것 같지만&hellip;.
+{% highlight sh %}
+vim kolla-kubernetes/tools/setup_kube_AIO.sh
+vim kolla-kubernetes/tools/setup_gate.sh
+vim kolla-kubernetes/helm/all_values.yaml
+vim kolla-kubernetes/orchestration/roles/kolla-controller/templates/cloud.yaml
+{% endhighlight %}</p>
+<h3 id="kolla-kuberneteshelmall_values">kolla-kubernetes/helm/all_values</h3>
+<ul>
+<li>apply IPs</li>
+</ul>
+<pre><code>docker_registry: 192.168.125.159:5000
+kolla_kubernetes_external_vip: 172.30.1.201
+</code></pre><ul>
+<li>replace all version No. with 5.0.2</li>
+</ul>
+<pre><code>                    haproxy_image_tag: 5.0.2
+</code></pre><ul>
+<li>api_interface for keepalived-daemonset</li>
+</ul>
+<pre><code>                        api_interface: eth0
+</code></pre><h3 id="etckollaglobalsyml">/etc/kolla/globals.yml</h3>
+<pre><code>kolla_internal_vip_address: &quot;172.30.1.201&quot;
+docker_registry: &quot;192.168.125.159:5000&quot;
+network_interface: &quot;eth0&quot;
+api_interface: &quot;{{ network_interface }}&quot;
+neutron_external_interface: &quot;eth1&quot;
+.
+.
+kolla_install_type: &quot;binary&quot;
+</code></pre><h3 id="cloudyaml">cloud.yaml</h3>
+<pre><code>global:
+   kolla:
+     all:
+       docker_registry: 192.168.125.159:5000
+       image_tag: &quot;5.0.2&quot;
+       kube_logger: false
+       external_vip: &quot;172.30.1.201&quot;
+       base_distro: &quot;centos&quot;
+       install_type: &quot;binary&quot;
+       tunnel_interface: &quot;eth0&quot;
+     keystone:
+       all:
+         admin_port_external: &quot;true&quot;
+         dns_name: &quot;172.30.1.201&quot;
+       public:
+         all:
+           port_external: &quot;true&quot;
+     rabbitmq:
+       all:
+         cookie: 67
+     glance:
+       api:
+         all:
+           port_external: &quot;true&quot;
+     cinder:
+       api:
+         all:
+           port_external: &quot;true&quot;
+       volume_lvm:
+         all:
+           element_name: cinder-volume
+         daemonset:
+           lvm_backends:
+           - '172.30.1.201': 'cinder-volumes'
+     ironic:
+       conductor:
+         daemonset:
+           selector_key: &quot;kolla_conductor&quot;
+     nova:
+       placement_api:
+         all:
+           port_external: true
+       novncproxy:
+         all:
+           port: 6080
+           port_external: true
+     openvswitch:
+       all:
+         add_port: true
+         ext_bridge_name: br-ex
+         ext_interface_name: eth1
+         setup_bridge: true
+     horizon:
+       all:
+         port_external: true
+</code></pre><h2 id="install">install</h2>
+<pre><code>sudo pip install -U kolla-ansible/ kolla-kubernetes/
+sudo cp -aR /usr/share/kolla-ansible/etc_examples/kolla /etc
+sudo cp -aR kolla-kubernetes/etc/kolla-kubernetes /etc
+sudo kolla-kubernetes-genpwd
+kubectl create namespace kolla
+kubectl label kkolla03 kolla_compute=true
+kubectl label kkolla02 kolla_network=true
+kubectl label kkolla01 kolla_controller=true
+
+sudo mkdir /etc/kolla/config
+sudo tee /etc/kolla/config/nova.conf&lt;&lt;EOF
+[libvirt]
+virt_type=qemu
+cpu_mode=none
+EOF
+
+ansible-playbook -e ansible_python_interpreter=/usr/bin/python -e @/etc/kolla/globals.yml -e @/etc/kolla/passwords.yml -e CONFIG_DIR=/etc/kolla kolla-kubernetes/ansible/site.yml
+
+kolla-kubernetes/tools/secret-generator.py create
+kollakube res create configmap \
+    mariadb keystone horizon rabbitmq memcached nova-api nova-conductor \
+    nova-scheduler glance-api-haproxy glance-registry-haproxy glance-api \
+    glance-registry neutron-server neutron-dhcp-agent neutron-l3-agent \
+    neutron-metadata-agent neutron-openvswitch-agent openvswitch-db-server \
+    openvswitch-vswitchd nova-libvirt nova-compute nova-consoleauth \
+    nova-novncproxy nova-novncproxy-haproxy neutron-server-haproxy \
+    nova-api-haproxy cinder-api cinder-api-haproxy cinder-backup \
+    cinder-scheduler cinder-volume iscsid tgtd keepalived \
+    placement-api placement-api-haproxy
+
+kolla-kubernetes/tools/helm_build_all.sh .
+helm install kolla-kubernetes/helm/microservice/keepalived-daemonset --namespace kolla --name keepalived --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/mariadb --namespace kolla --name mariadb --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/rabbitmq --namespace kolla --name rabbitmq --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/memcached --namespace kolla --name memcached --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/keystone --namespace kolla --name keystone --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/glance --namespace kolla --name glance --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/cinder-control --namespace kolla --name cinder-control --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/horizon --namespace kolla --name horizon --values ./cloud.yaml
+</code></pre><h2 id="network-node-분리">network-node 분리</h2>
+<p>기존 All-in-one에서 Controller, Network, Compute로 분할하여 Multi node로 deploy하기 위해서는
+<code>Open vSwitch</code> 관련 설정을 변경해야 한다. <!-- raw HTML omitted -->
+Network node에는 Open vSwitch와 Neutron관련 Components를 deploy하고<!-- raw HTML omitted -->
+그 중 아래 3개의 components는 Compute node의 OVS설정을 위해서 deploy한다.<!-- raw HTML omitted -->
+내용은 Network node와 비슷하지만 Compute node에는 br-ex가 적용되면 안되므로 neutron-openvswitch-agent-daemonset의 ml2 설정에서 br-ex를 삭제한다. 뒤에서 설명함.<!-- raw HTML omitted --></p>
+<pre><code>neutron-openvswitch-agent-daemonset
+openvswitch-vswitchd-daemonset
+openvswitch-ovsdb-daemonset
+</code></pre><p>이들 pod들은 하나의 <code>deployment</code>로 deploy하지 않고 node 각각에 적용하도록 변경함
+그러기 위해서</p>
+<ol>
+<li>kolla_network label을 추가함</li>
+</ol>
+<pre><code>kubectl label node kkolla01 kolla_controller=true -&gt; 원래 있던것
+kubectl label node kkolla02 kolla_network=true    -&gt; New
+kubectl label node kkolla03 kolla_compute=true    -&gt; 원래 있던것
+</code></pre><ol start="2">
+<li>Microservice 변경</li>
+</ol>
+<ul>
+<li>Chart 복제</li>
+</ul>
+<pre><code>cd /root/kolla-bringup/kolla-kubernetes/helm
+cp -r microservice/openvswitch-ovsdb-daemonset microservice/openvswitch-ovsdb-network-daemonset
+mv microservice/openvswitch-ovsdb-daemonset microservice/openvswitch-ovsdb-compute-daemonset
+
+cp -r microservice/openvswitch-vswitchd-daemonset microservice/openvswitch-vswitchd-network-daemonset
+mv microservice/openvswitch-vswitchd-daemonset microservice/openvswitch-vswitchd-compute-daemonset
+
+cp -r microservice/neutron-openvswitch-agent-daemonset microservice/neutron-openvswitch-agent-network-daemonset
+mv microservice/neutron-openvswitch-agent-daemonset microservice/neutron-openvswitch-agent-compute-daemonset
+
+
+</code></pre><ul>
+<li>Chart 수정</li>
+</ul>
+<pre><code>vim microservice/openvswitch-ovsdb-network-daemonset/Chart.yaml
+-&gt; name: openvswitch-ovsdb-network-daemonset
+vim microservice/openvswitch-ovsdb-compute-daemonset/Chart.yaml
+-&gt; name: openvswitch-ovsdb-compute-daemonset
+vim microservice/openvswitch-vswitchd-network-daemonset/Chart.yaml
+-&gt; name: openvswitch-vswitchd-network-daemonset
+vim microservice/openvswitch-vswitchd-compute-daemonset/Chart.yaml
+-&gt; name: openvswitch-vswitchd-compute-daemonset
+vim microservice/neutron-openvswitch-agent-network-daemonset/Chart.yaml
+-&gt; name: neutron-openvswitch-agent-network-daemonset
+vim microservice/neutron-openvswitch-agent-compute-daemonset/Chart.yaml
+-&gt; name: neutron-openvswitch-agent-compute-daemonset
+</code></pre><ul>
+<li>template name 변경</li>
+</ul>
+<pre><code>mv microservice/openvswitch-ovsdb-network-daemonset/templates/openvswitch-ovsdb-daemonset.yaml microservice/openvswitch-ovsdb-network-daemonset/templates/openvswitch-ovsdb-network-daemonset.yaml
+mv microservice/openvswitch-ovsdb-compute-daemonset/templates/openvswitch-ovsdb-daemonset.yaml microservice/openvswitch-ovsdb-compute-daemonset/templates/openvswitch-ovsdb-compute-daemonset.yaml
+mv microservice/openvswitch-vswitchd-network-daemonset/templates/openvswitch-vswitchd-daemonset.yaml microservice/openvswitch-vswitchd-network-daemonset/templates/openvswitch-vswitchd-network-daemonset.yaml
+mv microservice/openvswitch-vswitchd-compute-daemonset/templates/openvswitch-vswitchd-daemonset.yaml microservice/openvswitch-vswitchd-compute-daemonset/templates/openvswitch-vswitchd-compute-daemonset.yaml
+mv microservice/neutron-openvswitch-agent-network-daemonset/templates/openvswitch-agent-daemonset.yaml microservice/neutron-openvswitch-agent-network-daemonset/templates/openvswitch-agent-network-daemonset.yaml
+mv microservice/neutron-openvswitch-agent-compute-daemonset/templates/openvswitch-agent-daemonset.yaml microservice/neutron-openvswitch-agent-compute-daemonset/templates/openvswitch-agent-compute-daemonset.yaml
+</code></pre><ol start="3">
+<li>기존 패키지 삭제 (삭제 안하면 중복돼서 deploy 안됨)</li>
+</ol>
+<pre><code>cd /root/kolla-bringup/
+rm openvswitch-ovsdb-daemonset-0.7.0-1.tgz
+rm openvswitch-vswitchd-daemonset-0.7.0-1.tgz
+rm neutron-openvswitch-agent-daemonset-0.7.0-1.tgz
+
+cd /root/kolla-bringup/kolla-kubernetes/helm/service/openvswitch/charts/
+rm openvswitch-ovsdb-daemonset-0.7.0-1.tgz
+rm openvswitch-vswitchd-daemonset-0.7.0-1.tgz
+
+cd /root/kolla-bringup/kolla-kubernetes/helm/service/neutron/charts/
+rm neutron-openvswitch-agent-daemonset-0.7.0-1.tgz
+</code></pre><ol start="4">
+<li>vim all_values.yaml 수정 <!-- raw HTML omitted -->
+<strong>NOTE</strong> : type은 deployment의 이름에 붙는것이다. 그래서 같이 주면 쫑남<!-- raw HTML omitted -->
+<strong>NOTE</strong> : selector_key를 주는 방법은 <code>kolla-kubernetes-정리.md</code>의 <code>nodeSelector</code> 참고<!-- raw HTML omitted --></li>
+</ol>
+<pre><code>.
+.
+.
+neutron-openvswitch-agent-network-daemonset:
+        type: network
+        global:
+            kolla:
+                all:
+                    tunnel_interface: eth0
+                neutron:
+                    openvswitch_agent_network:
+                        daemonset:
+                            selector_key: kolla_network
+                            logger_configmap_name: neutron-openvswitch-agent-logger
+
+neutron-openvswitch-agent-compute-daemonset:
+        type: compute
+        global:
+            kolla:
+                all:
+                    tunnel_interface: eth0
+                neutron:
+                    openvswitch_agent_compute:
+                        daemonset:
+                            selector_key: kolla_compute
+                            logger_configmap_name: neutron-openvswitch-agent-logger
+
+neutron-l3-agent-daemonset:
+        type: network
+        global:
+            kolla:
+                all:
+                    tunnel_interface: eth0
+                neutron:
+                    all:
+                        dvr: false
+                    l3_agent_network:
+                        daemonset:
+                            selector_key: kolla_network
+                            logger_configmap_name: neutron-l3-agent-logger
+
+neutron-dhcp-agent-daemonset:
+        type: network
+        global:
+            kolla:
+                all:
+                    tunnel_interface: eth0
+                neutron:
+                    dhcp_agent:
+                        daemonset:
+                            selector_key: kolla_network
+                            logger_configmap_name: neutron-dhcp-agent-logger
+
+neutron-metadata-agent-daemonset:
+        type: network
+        global:
+            kolla:
+                neutron:
+                    metadata_agent_network:
+                        daemonset:
+                            selector_key: kolla_network
+                            logger_configmap_name: neutron-metadata-agent-logger
+
+openvswitch-ovsdb-network-daemonset:
+        type: network
+        global:
+            kolla:
+                openvswitch:
+                    db_network:
+                        daemonset:
+                            selector_key: kolla_network
+
+openvswitch-ovsdb-compute-daemonset:
+        type: compute
+        global:
+            kolla:
+                openvswitch:
+                    db_compute:
+                        daemonset:
+                            selector_key: kolla_compute
+
+openvswitch-vswitchd-network-daemonset:
+        type: network
+        global:
+            kolla:
+                openvswitch:
+                    all:
+                        selector_key: kolla_network
+                        setup_bridge: true
+                        add_port: false
+                        ext_bridge_name: br-ex
+                        ext_bridge_up: false
+                        ext_interface_name: eth1
+                    vswitchd_network:                          //이렇게 &quot;_network&quot;를 붙여서 구분해 함. 이유는 아래에 있음
+                        daemonset:
+                            selector_key: kolla_network
+
+openvswitch-vswitchd-compute-daemonset:
+        type: compute
+        global:
+            kolla:
+                openvswitch:
+                    all:
+                        selector_key: kolla_compute
+                        setup_bridge: true
+                        add_port: false
+                        ext_bridge_name: br-ex
+                        ext_bridge_up: false
+                        ext_interface_name: eth1
+                    vswitchd_compute:                         //이렇게 &quot;_compute&quot;를 붙여서 구분하지 않으면 이전 값을 참조하는지 kolla_network에 설치 된다.
+                        daemonset:
+                            selector_key: kolla_compute
+
+
+</code></pre><ol start="5">
+<li>dependency.yaml 수정</li>
+</ol>
+<p>vim /root/kolla-bringup/kolla-kubernetes/helm/service/openvswitch/requirements.yaml</p>
+<pre><code>dependencies:
+  - name: openvswitch-ovsdb-network-daemonset
+    repository: file://../../microservice/openvswitch-ovsdb-network-daemonset
+    version: 0.7.0-1
+  - name: openvswitch-vswitchd-network-daemonset
+    repository: file://../../microservice/openvswitch-vswitchd-network-daemonset
+    version: 0.7.0-1
+  - name: openvswitch-ovsdb-compute-daemonset
+    repository: file://../../microservice/openvswitch-ovsdb-compute-daemonset
+    version: 0.7.0-1
+  - name: openvswitch-vswitchd-compute-daemonset
+    repository: file://../../microservice/openvswitch-vswitchd-compute-daemonset
+    version: 0.7.0-1
+</code></pre><p>vim /root/kolla-bringup/kolla-kubernetes/helm/service/neutron/requirements.yaml</p>
+<pre><code>.
+.
+  - name: neutron-openvswitch-agent-network-daemonset
+    repository: file://../../microservice/neutron-openvswitch-agent-network-daemonset
+    version: 0.7.0-1
+  - name: neutron-openvswitch-agent-compute-daemonset
+    repository: file://../../microservice/neutron-openvswitch-agent-compute-daemonset
+    version: 0.7.0-1
+.
+.
+</code></pre><ol start="6">
+<li>기존 tgz 삭제</li>
+</ol>
+<pre><code>rm /root/kolla-bringup/kolla-kubernetes/helm/service/openvswitch/charts/openvswitch-ovsdb-daemonset-0.7.0-1.tgz
+rm /root/kolla-bringup/kolla-kubernetes/helm/service/openvswitch/charts/openvswitch-vswitchd-daemonset-0.7.0-1.tgz
+rm /root/kolla-bringup/kolla-kubernetes/helm/service/neutron/charts/neutron-openvswitch-agent-daemonset-0.7.0-1.tgz
+</code></pre><ol start="7">
+<li>compute-node에 br-ex삭제</li>
+</ol>
+<p>vim kolla-kubernetes/helm/microservice/neutron-openvswitch-agent-compute-daemonset/templates/openvswitch-agent-compute-daemonset.yaml
+update-config의 command 부분 제일 마지막에 아래 삽입</p>
+<pre><code>              sed -i &quot;/br-ex/d&quot; /srv/pod-main-config/ml2_conf.ini;
+</code></pre><p>vim kolla-kubernetes/helm/all_values.yaml 에 openvswitch-vswitchd-compute-daemonset: 에서 아래로 수정</p>
+<pre><code>                        selector_key: kolla_compute
+                        setup_bridge: false
+                        add_port: false
+                        ext_bridge_up: false
+</code></pre><ol start="8">
+<li>remove the below openvswitch from cloud.yaml</li>
+</ol>
+<pre><code>     openvswitch: 
+       all: 
+         add_port: true 
+         ext_bridge_name: br-ex 
+         ext_interface_name: eth1 
+         setup_bridge: true 
+</code></pre><ol start="9">
+<li>
+<p>rebuild
+kolla-kubernetes/tools/helm_build_all.sh .</p>
+</li>
+<li>
+<p>install</p>
+</li>
+</ol>
+<pre><code>helm install --debug kolla-kubernetes/helm/service/openvswitch --namespace kolla --name openvswitch --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/neutron --namespace kolla --name neutron --values ./cloud.yaml
+</code></pre><h2 id="nova-control-수정">nova-control 수정</h2>
+<h3 id="걍-fiexd-port로-추가">걍 fiexd port로 추가</h3>
+<p>vim kolla-kubernetes/helm/microservice/nova-api-create-simple-cell-job/templates/nova-api-create-cell.yaml</p>
+<pre><code>{% raw %}
+{{- $keystonePort := include &quot;kolla_val_get_str&quot; (dict &quot;key&quot; &quot;port&quot; &quot;searchPath&quot; $keystoneSearchPath &quot;Values&quot; .Values ) }}
+   -&gt;
+{{- $keystonePort := include &quot;kolla_val_get_str&quot; (dict &quot;key&quot; &quot;port&quot; &quot;searchPath&quot; $keystoneSearchPath &quot;Values&quot; .Values ) | default &quot;5000&quot; }}
+{% endraw %}
+</code></pre><h3 id="dependency-재-설정">dependency 재 설정</h3>
+<p>vim kolla-kubernetes/helm/service/nova-control/values.yaml <!-- raw HTML omitted --></p>
+<ul>
+<li>cell0 dependency 에서 nova-api 삭제<!-- raw HTML omitted --></li>
+<li>manage_db에 nova-cell0-create-db job 추가 (nova-manage 명령어가 오래 걸려서 그런지 이거 추가 안해도 구동은 됐음)</li>
+</ul>
+<pre><code>                manage_db:
+                    job:
+                        dependencies:
+                            jobs:
+                            - nova-api-create-db
+                            - nova-cell0-create-db
+                            service:
+                            - mariadb
+</code></pre><h3 id="db-초기화-절차-수정---아래-두가지-중에-하나-선택">db 초기화(?) 절차 수정 - 아래 두가지 중에 하나 선택</h3>
+<p><a href="https://docs.openstack.org/nova/pike/install/controller-install-obs.html">https://docs.openstack.org/nova/pike/install/controller-install-obs.html</a> 참조해서 만듦</p>
+<ol>
+<li>pod를 수정하는 방법 - 공통으로 쓰는 _common_manage_db_job.yaml에 직접 수정하면 안되고 아래처럼 파라미터로 받아서 처리하게 해야 함</li>
+</ol>
+<p>vim kolla-kubernetes/helm/kolla-common/templates/_common_manage_db_job.yaml</p>
+<p>아래 추가</p>
+<pre><code>{% raw %}
+{{- if .podTypeCommand }}
+          command: [&quot;bin/bash&quot;, &quot;-c&quot;, {{ .podTypeCommand }}]
+{{- end }}
+{% endraw %}
+</code></pre><p>vim kolla-kubernetes/helm/microservice/nova-api-manage-db-job/templates/nova-api-manage-db.yaml</p>
+<p>아래 추가</p>
+<pre><code>{% raw %}
+{{- $podTypeCommand := &quot;sudo -E kolla_set_configs; mkdir -p /var/log/kolla/nova; touch /var/log/kolla/nova/nova-manage.log; chmod 777 /var/log/kolla/nova/nova-manage.log; nova-manage api_db sync; nova-manage cell_v2 map_cell0; nova-manage cell_v2 create_cell --name=cell1 --verbose; nova-manage db sync&quot; }}
+
+{{- with $env := dict &quot;resourceName&quot; $resourceName &quot;serviceName&quot; $serviceName &quot;podTypeCommand&quot; $podTypeCommand &quot;podTypeBootstrap&quot; $podTypeBootstrap &quot;imageFull&quot; $imageFull &quot;Values&quot; .Values &quot;Release&quot; .Release &quot;searchPath&quot; $searchPath }}
+{% endraw %}
+</code></pre><!-- raw HTML omitted -->
+<blockquote>
+<p>nova-manage db online_data_migrations 이 제일 마지막에 있는데 이것도 compute-control 이후에 돌려볼것 돌려봐서 무리 없으면 kolla_build에 넣을것. 이건 새로 설치할때가 아니라 업그레이드할때 필요한것임(이건 적용 안했음)</p>
+</blockquote>
+<ol start="2">
+<li>위의 1)로 해도 되고 아님 아래처럼 kolla image를 직접 변경할 수도 있다.
+<!-- raw HTML omitted -->
+vim /root/kolla/docker/nova/nova-api/extend_start.sh</li>
+</ol>
+<pre><code>nova-manage api_db sync;
+nova-manage cell_v2 map_cell0;
+nova-manage cell_v2 create_cell --name=cell1 --verbose;
+nova-manage db sync;
+</code></pre><!-- raw HTML omitted -->
+<blockquote>
+<p>적용한 후 <code>kolla build</code> 재 실행
+<!-- raw HTML omitted --></p>
+</blockquote>
+<h3 id="설치">설치</h3>
+<pre><code>helm install --debug kolla-kubernetes/helm/service/nova-control --namespace kolla --name nova-control --values ./cloud.yaml
+helm install --debug kolla-kubernetes/helm/service/nova-compute --namespace kolla --name nova-compute --values ./cloud.yaml
+</code></pre><h3 id="구조">구조</h3>
+<p><img src="/images/kolla-k8s.png" alt="topoloty"></p>
+
+    </main>
+</section>
+
+
+<footer class="p-strip is-wrapper">
+    <div class="row">
+        <div class="p-article-pagination">
+    
+
+    
+    <a class="p-article-pagination__link--previous" href="https://jazzsir.github.io/posts/using-sr-iov-on-openstack/">
+        <span class="p-article-pagination__label">Previous</span>
+        <span class="p-article-pagination__title">
+            Using SR-IOV on OpenStack
+        </span>
+    </a>
+    
+
+    
+    <a class="p-article-pagination__link--next" href="https://jazzsir.github.io/posts/machine-learning/">
+        <span class="p-article-pagination__label">Next</span>
+        <span class="p-article-pagination__title">
+            Machine learning
+        </span>
+    </a>
+    
+</div>
+    </div>
+</footer>
+
+
+
+<div class="p-strip u-no-padding--bottom is-shallow">
+    <div class="row">
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ok-ish-blog" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+</div>
+
+
+
+        </div><footer class="p-strip is-shallow page-footer">
+    <div class="row">
+        <div class="col-12  u-align--center">
+            <p>
+                © 2020 jazzsir&rsquo;s tech blog. Powered by <a href="https://github.com/gohugoio/hugo">Hugo</a>. Theme <a href="https://github.com/kongdivin/hugo-theme-okayish-blog#readme">Okayish Blog Hugo Theme</a>.
+            </p>
+        </div>
+    </div>
+</footer>
+
+
+
+
+</body>
+</html>

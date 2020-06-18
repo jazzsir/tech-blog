@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en-us"><head>
+    
+
+
+
+
+
+<title>Tuning kernel for kubernetes | Jazzsir&#39;s blog</title>
+
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content='Kubernetes의 Pod/container가 cgroup으로 isolation된다고 하더라도 host의 conntrack table을 공유할 수 밖에 없으므로 동시 접속자 수가 많고 짧은 응답시간이 요구되는 시스템의 경우 관련 파라미터들의 튜닝이 필요하다. 또한 성능을 위해서 ingress-controller를 hostNetwork로 설정하고 별도의 노드로 구성하였다면 다양한 커널 파라미터들을 튜닝하여 성능 개선을 할 수 있다.
+Netfilter modules nf_conntrack /proc/sys/net/netfilter/nf_conntrack_max는 NAT/SNAT(또는 IP당 연결 갯수 제한을 위해) 연결을 tracking하는 table의 최대 연결 갯수를 정하는 값인데, Load test나 많은 연결을 요할때 병목이 될 수 있다.'>
+<meta name="keywords" content='kubeflow, deep learning, kubernetes, openstack, distributed traning, operator'>
+<meta name="msapplication-TileColor" content="#b91d47">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="canonical" href="https://jazzsir.github.io/posts/tuning-kernel-for-kubernetes/" />
+<link rel="apple-touch-icon" sizes="180x180" href='/apple-touch-icon.png'>
+<link rel="icon" type="image/png" sizes="32x32" href='/favicon-32x32.png'>
+<link rel="icon" type="image/png" sizes="16x16" href='/favicon-16x16.png'>
+<link rel="manifest" href='/site.webmanifest'>
+<link rel="mask-icon" href='/safari-pinned-tab.svg' color="#696969">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+
+<meta property="og:title" content="Tuning kernel for kubernetes" />
+<meta property="og:description" content="Kubernetes의 Pod/container가 cgroup으로 isolation된다고 하더라도 host의 conntrack table을 공유할 수 밖에 없으므로 동시 접속자 수가 많고 짧은 응답시간이 요구되는 시스템의 경우 관련 파라미터들의 튜닝이 필요하다. 또한 성능을 위해서 ingress-controller를 hostNetwork로 설정하고 별도의 노드로 구성하였다면 다양한 커널 파라미터들을 튜닝하여 성능 개선을 할 수 있다.
+Netfilter modules nf_conntrack /proc/sys/net/netfilter/nf_conntrack_max는 NAT/SNAT(또는 IP당 연결 갯수 제한을 위해) 연결을 tracking하는 table의 최대 연결 갯수를 정하는 값인데, Load test나 많은 연결을 요할때 병목이 될 수 있다." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jazzsir.github.io/posts/tuning-kernel-for-kubernetes/" />
+<meta property="article:published_time" content="2018-12-28T00:00:00+00:00" />
+<meta property="article:modified_time" content="2018-12-28T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Tuning kernel for kubernetes"/>
+<meta name="twitter:description" content="Kubernetes의 Pod/container가 cgroup으로 isolation된다고 하더라도 host의 conntrack table을 공유할 수 밖에 없으므로 동시 접속자 수가 많고 짧은 응답시간이 요구되는 시스템의 경우 관련 파라미터들의 튜닝이 필요하다. 또한 성능을 위해서 ingress-controller를 hostNetwork로 설정하고 별도의 노드로 구성하였다면 다양한 커널 파라미터들을 튜닝하여 성능 개선을 할 수 있다.
+Netfilter modules nf_conntrack /proc/sys/net/netfilter/nf_conntrack_max는 NAT/SNAT(또는 IP당 연결 갯수 제한을 위해) 연결을 tracking하는 table의 최대 연결 갯수를 정하는 값인데, Load test나 많은 연결을 요할때 병목이 될 수 있다."/>
+
+<meta itemprop="name" content="">
+<meta itemprop="description" content="">
+    
+    
+    
+    
+    
+    <link rel="stylesheet" href='/css/style.css'>
+
+    
+
+</head>
+<body><header id="navigation" class="p-navigation">
+    <div class="p-navigation__row">
+        <div class="p-navigation__banner">
+            <div class="p-navigation__logo">
+                <a class="p-navigation__link u-vertically-center p-link--logo" href="https://jazzsir.github.io/">
+                    Home
+                </a>
+            </div>
+            
+            <a href="#navigation" class="p-navigation__toggle--open" title="menu">
+                <i class="p-icon--menu"></i>
+            </a>
+            <a href="#navigation-closed" class="p-navigation__toggle--close" title="close menu">
+                <i class="p-icon--close"></i>
+            </a>
+        </div>
+
+        <nav class="p-navigation__nav">
+            <span class="u-off-screen">
+                <a href="#main-content">Jump to main content</a>
+            </span>
+
+            <ul class="p-navigation__items" role="menu">
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/authors">Authors</a>
+                </li>
+                
+                <li class="p-navigation__item" role="menuitem">
+                    <a class="p-navigation__link" href="https://jazzsir.github.io/categories">Categories</a>
+                </li>
+                
+            </ul>
+
+            
+            <form class="p-search-box" action="https://www.google.com/search" target="_blank">
+    <input type="search" class="p-search-box__input" name="q" placeholder='Search'
+        required="" aria-label="Query">
+    <input type="hidden" name="sitesearch" value="https://jazzsir.github.io/">
+    <button type="reset" class="p-search-box__reset" alt="reset" aria-label="Reset">
+        <i class="p-icon--close"></i>
+    </button>
+    <button type="submit" class="p-search-box__button" alt="search" aria-label="Search">
+        <i class="p-icon--search"></i>
+    </button>
+</form>
+            
+        </nav>
+    </div>
+</header>
+<div id="main-content">
+<header class="p-strip page-banner">
+    <div class="row">
+        <h1>Tuning kernel for kubernetes</h1>
+    </div>
+
+    
+
+<div class="row">
+
+    
+    <div class="col-8">
+        
+
+
+
+
+<div class="p-media-object">
+
+    
+
+    <div class="p-media-object__details">
+
+        
+
+        
+        <p class="p-media-object__content">
+            <span class="u-capitalized">on</span>
+            2018-12-28
+        </p>
+        
+
+    </div>
+</div>
+
+
+    </div>
+    
+
+    
+    <div class="col-4  col--share-links ">
+        <ul class="p-inline-list-icons p-inline-list-icons--share-links u-no-padding--left u-no-margin--left u-unselectable">
+    <li class="p-inline-list__item">
+        <i class="p-icon--share"></i>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--facebook" title='Share on Facebook' target="_blank"
+            rel="noreferrer" href="//www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fjazzsir.github.io%2fposts%2ftuning-kernel-for-kubernetes%2f">
+            Facebook
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--twitter" title='Share on Twitter' target="_blank"
+            rel="noreferrer" href="http://twitter.com/share?text=Tuning%20kernel%20for%20kubernetes&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2ftuning-kernel-for-kubernetes%2f">
+            Twitter
+        </a>
+    </li>
+    <li class="p-inline-list__item">
+        <a class="p-icon--linkedin" title='Share on LinkedIn' target="_blank"
+            rel="noreferrer"
+            href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjazzsir.github.io%2fposts%2ftuning-kernel-for-kubernetes%2f&amp;title=Tuning%20kernel%20for%20kubernetes">
+            LinkedIn
+        </a>
+    </li>
+</ul>
+    </div>
+    
+
+</div>
+
+
+
+
+<div class="row">
+    <div class="col-12">
+        
+<a href="https://jazzsir.github.io/tags/kernal-parameter/">#Kernal parameter</a>&ensp;
+
+<a href="https://jazzsir.github.io/tags/kubernetes/">#kubernetes</a>&ensp;
+
+    </div>
+</div>
+
+</header>
+
+<section class="p-strip is-shallow">
+    <main class="row post-content">
+        <p>Kubernetes의 Pod/container가 cgroup으로 isolation된다고 하더라도 host의 conntrack table을 공유할 수 밖에 없으므로
+동시 접속자 수가 많고 짧은 응답시간이 요구되는 시스템의 경우 관련 파라미터들의 튜닝이 필요하다.
+또한 성능을 위해서 ingress-controller를 hostNetwork로 설정하고 별도의 노드로 구성하였다면 다양한 커널 파라미터들을 튜닝하여 성능 개선을 할 수 있다.</p>
+<h1 id="netfilter-modules">Netfilter modules</h1>
+<h2 id="nf_conntrack">nf_conntrack</h2>
+<p><code>/proc/sys/net/netfilter/nf_conntrack_max</code>는 NAT/SNAT(또는 IP당 연결 갯수 제한을 위해) 연결을 tracking하는
+table의 최대 연결 갯수를 정하는 값인데, Load test나 많은 연결을 요할때 병목이 될 수 있다.<br>
+확인하는 방법은 /proc/sys/net/netfilter/nf_conntrack_count(현재 커넥션 수)가 nf_conntrack_max값이 되고,<br>
+시스템 로그에 &ldquo;nf_conntrack: table full, dropping packet&quot;라고 찍힌다면 해당 값에 병목이 발생한 것이다.</p>
+<p>그런데 kube-proxy가 nf_conntrack_max를 포함한 아래 4가지 nf_conntrack관련 parameters를 부팅시 초기화 한다.</p>
+<pre><code>/proc/sys/net/netfilter/nf_conntrack_max
+/proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established
+/proc/sys/net/netfilter/nf_conntrack_tcp_timeout_close_wait
+/sys/module/nf_conntrack/parameters/hashsize
+</code></pre><p>kube-proxy가 nf_conntrack_max값을 정하는 방법은 <a href="https://github.com/kubernetes/kubernetes/blob/8de1569ddae62e8fab559fe6bd210a5d6100a277/cmd/kube-proxy/app/server.go#L657">소스 참조</a><br>
+즉, 아래와 같이 노드에 할당된 core수를 참조하여 설정한다.</p>
+<pre><code>if((host의 core 갯수 * 32768) &gt; 131072)
+  nf_conntrack_max = core 수 * 32768;
+else
+  nf_conntrack_max = 131072;
+</code></pre><p>nf_conntrack_max값을 수정하는 방법은 3가지 이다.</p>
+<ol>
+<li>host의 core수를 늘린다.</li>
+<li>kube-proxy의 옵션값을 조정한다.(주의: 옵션은 전체 노드에 적용되므로 신중히 판단해야 함)</li>
+</ol>
+<pre><code>    --conntrack-max-per-core
+    --conntrack-min
+</code></pre><ol start="3">
+<li>crontab으로 주기적으로 재 설정한다.</li>
+</ol>
+<pre><code>crontab -l | { cat; echo  &quot;* * * * * COMM=\$(cat /proc/sys/net/netfilter/nf_conntrack_max); if [ \${COMM} -ne $최대값 ]; then /usr/sbin/sysctl -w net.netfilter.nf_conntrack_max=$최대값; fi&quot;; } | crontab -
+</code></pre><h2 id="net">net.</h2>
+<ul>
+<li>net.core.netdev_max_backlog
+<ul>
+<li>각 네트워크 장치 별로 커널이 처리하도록 쌓아두는 queue의 크기, trade-off 관계가 메모리 사용량 밖에 없으므로, 적당히 증가시켜두는 것도 괜찮음.</li>
+</ul>
+</li>
+<li>net.core.somaxconn
+<ul>
+<li>listen()으로 바인딩 된 서버 소켓에서 accept()를 기다리는 소켓 개수에 관련된 커널 파라미터.</li>
+</ul>
+</li>
+<li>net.ipv4.tcp_max_syn_backlog
+<ul>
+<li>SYN_RECEIVED 상태의 소켓(connection incompleted)을 위한 queue 이다.</li>
+</ul>
+</li>
+</ul>
+<h1 id="time_wait-socket-reuse">TIME_WAIT socket reuse</h1>
+<p>웹서버가 다른 서버에 질의하는 경우, 서버는 또 다른 서버의 클라이언트가 되므로 TIME_WAIT 상태의 소켓 개수가 성능에 영향을 미칠 수 있다.<br>
+이것을 사용하면 socket의 활용도를 높일 수 있지만, TIME_WAIT 상태는 gracefully shutdown을 위해 필요하므로, 무조건 없애는것은 문제가 될 수 있다.<br>
+특히, NAT와 유사한 환경에서는 문제가 발생할 수 있다.</p>
+<h2 id="방법은-아래-4가지-이다">방법은 아래 4가지 이다.</h2>
+<blockquote>
+<p>참고: <a href="https://meetup.toast.com/posts/55">https://meetup.toast.com/posts/55</a></p>
+</blockquote>
+<h3 id="1-애플리케이션에서-connection-pool을-사용">1. 애플리케이션에서 connection pool을 사용</h3>
+<p>app에서 별도 개발 필요함</p>
+<h3 id="2-tw_reuse-옵션을-사용">2. TW_REUSE 옵션을 사용</h3>
+<p>사용할 수 있는 local port 수가 모자라면, 현재 TIME_WAIT 상태의 소켓 중 프로토콜상 사용해도 무방해 보이는 소켓을 재사용.</p>
+<pre><code>      ipv4.tcp_timestamps=&quot;1&quot;
+      net.ipv4.tcp_tw_reuse=&quot;1&quot;
+</code></pre><p>유의할 점은, TW_REUSE 옵션은 통신을 하는 양측 모두 TCP timestamp 옵션이 설정되어 있어야 활성화된다</p>
+<h3 id="3-tw_recycle-옵션을-사용">3. TW_RECYCLE 옵션을 사용</h3>
+<p>좀 과격한 방법으로 TIMEWAIT 상태에 머무르는 시간을 변경하여 TIMEWAIT 상태의 소켓 수를 줄여버림.</p>
+<pre><code>      ipv4.tcp_timestamps=&quot;1&quot;
+      net.ipv4.tcp_tw_reuse=&quot;1&quot;
+      net.ipv4.tcp_tw_recycle=&quot;1&quot;
+</code></pre><p>유의점: 클라이언트가 NAT 환경인 경우 일부 클라이언트로 부터의 SYN 패킷이 유실될 수 있기 때문에 TW_RECYCLE 사용시 일부 TCP 연결 요청은 실패하게 됨.</p>
+<h3 id="4-socket-linger-옵션을-굉장히-짧은-시간을-매개변수로-주어-사용">4. Socket linger 옵션을 굉장히 짧은 시간을 매개변수로 주어 사용</h3>
+<p>가장 과격한 방법으로, FIN 대신 RST를 보내게 유도하며, 이 때 소켓을 파괴하여 소켓이 TIME_WAIT 상태에 머무르지 않게 함.</p>
+<h1 id="openfile-descripter">Openfile descripter</h1>
+<p>/etc/security/limits.conf 아래 값 추가하여 soft/hard 모두 늘려준다.</p>
+<pre><code>*               soft    nofile            [적당한 값]
+*               hard    nofile            [적당한 값]
+</code></pre><p>아래 명령어로 설정값 확인</p>
+<pre><code>ulimit -a
+ulimit -Sa
+ulimit -Ha
+</code></pre>
+    </main>
+</section>
+
+
+<footer class="p-strip is-wrapper">
+    <div class="row">
+        <div class="p-article-pagination">
+    
+
+    
+    <a class="p-article-pagination__link--previous" href="https://jazzsir.github.io/posts/machine-learning/">
+        <span class="p-article-pagination__label">Previous</span>
+        <span class="p-article-pagination__title">
+            Machine learning
+        </span>
+    </a>
+    
+
+    
+    <a class="p-article-pagination__link--next" href="https://jazzsir.github.io/posts/kubebuilder-and-operator-sdk/">
+        <span class="p-article-pagination__label">Next</span>
+        <span class="p-article-pagination__title">
+            Kubebuilder and Operator-SDK Souce code 분석
+        </span>
+    </a>
+    
+</div>
+    </div>
+</footer>
+
+
+
+<div class="p-strip u-no-padding--bottom is-shallow">
+    <div class="row">
+        <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "ok-ish-blog" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </div>
+</div>
+
+
+
+        </div><footer class="p-strip is-shallow page-footer">
+    <div class="row">
+        <div class="col-12  u-align--center">
+            <p>
+                © 2020 jazzsir&rsquo;s tech blog. Powered by <a href="https://github.com/gohugoio/hugo">Hugo</a>. Theme <a href="https://github.com/kongdivin/hugo-theme-okayish-blog#readme">Okayish Blog Hugo Theme</a>.
+            </p>
+        </div>
+    </div>
+</footer>
+
+
+
+
+</body>
+</html>

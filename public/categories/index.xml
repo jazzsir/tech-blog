@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Jazzsir&#39;s blog</title>
+    <link>https://jazzsir.github.io/categories/</link>
+    <description>Recent content in Categories on Jazzsir&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright> © 2020 jazzsir&#39;s tech blog. Powered by [Hugo](https://github.com/gohugoio/hugo). Theme [Okayish Blog Hugo Theme](https://github.com/kongdivin/hugo-theme-okayish-blog#readme).</copyright>
+    <lastBuildDate>Wed, 17 Jun 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://jazzsir.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Kubeflow</title>
+      <link>https://jazzsir.github.io/categories/kubeflow/</link>
+      <pubDate>Wed, 17 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/categories/kubeflow/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Kubernetes</title>
+      <link>https://jazzsir.github.io/categories/kubernetes/</link>
+      <pubDate>Wed, 17 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/categories/kubernetes/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MLOps</title>
+      <link>https://jazzsir.github.io/categories/mlops/</link>
+      <pubDate>Wed, 17 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/categories/mlops/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Openstack</title>
+      <link>https://jazzsir.github.io/categories/openstack/</link>
+      <pubDate>Tue, 17 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/categories/openstack/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Data plane acceleration</title>
+      <link>https://jazzsir.github.io/categories/data-plane-acceleration/</link>
+      <pubDate>Mon, 01 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/categories/data-plane-acceleration/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>AI</title>
+      <link>https://jazzsir.github.io/categories/ai/</link>
+      <pubDate>Thu, 21 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/categories/ai/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

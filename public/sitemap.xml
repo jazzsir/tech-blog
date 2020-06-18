@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://jazzsir.github.io/categories/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/improving-kubeflow-manifest/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/kubeflow/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/categories/kubeflow/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/kubernetes/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/categories/kubernetes/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/categories/mlops/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/</loc>
+    <lastmod>2020-06-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/cluster-api/</loc>
+    <lastmod>2019-09-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/cluster-api-using-openstack-provider/</loc>
+    <lastmod>2019-09-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/openstack/</loc>
+    <lastmod>2019-09-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/categories/openstack/</loc>
+    <lastmod>2019-09-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/categories/data-plane-acceleration/</loc>
+    <lastmod>2019-07-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/dpdk/</loc>
+    <lastmod>2019-07-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/sr-iov/</loc>
+    <lastmod>2019-07-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/sriov-and-dpdk-packet-processing-acceleration-in-kubernetes/</loc>
+    <lastmod>2019-07-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/controller/</loc>
+    <lastmod>2019-06-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/kubebuilder/</loc>
+    <lastmod>2019-06-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/kubebuilder-and-operator-sdk/</loc>
+    <lastmod>2019-06-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/operator/</loc>
+    <lastmod>2019-06-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/operator-sdk/</loc>
+    <lastmod>2019-06-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/kernal-parameter/</loc>
+    <lastmod>2018-12-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/tuning-kernel-for-kubernetes/</loc>
+    <lastmod>2018-12-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/categories/ai/</loc>
+    <lastmod>2018-06-21T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/deep-learning/</loc>
+    <lastmod>2018-06-21T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/tags/machine-learning/</loc>
+    <lastmod>2018-06-21T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/machine-learning/</loc>
+    <lastmod>2018-06-21T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/installing-kolla-kubernetes/</loc>
+    <lastmod>2017-10-21T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/posts/using-sr-iov-on-openstack/</loc>
+    <lastmod>2016-03-05T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://jazzsir.github.io/authors/</loc>
+  </url>
+  
+</urlset>

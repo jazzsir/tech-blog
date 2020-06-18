@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kernal parameter on Jazzsir&#39;s blog</title>
+    <link>https://jazzsir.github.io/tags/kernal-parameter/</link>
+    <description>Recent content in Kernal parameter on Jazzsir&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright> © 2020 jazzsir&#39;s tech blog. Powered by [Hugo](https://github.com/gohugoio/hugo). Theme [Okayish Blog Hugo Theme](https://github.com/kongdivin/hugo-theme-okayish-blog#readme).</copyright>
+    <lastBuildDate>Fri, 28 Dec 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://jazzsir.github.io/tags/kernal-parameter/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Tuning kernel for kubernetes</title>
+      <link>https://jazzsir.github.io/posts/tuning-kernel-for-kubernetes/</link>
+      <pubDate>Fri, 28 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/posts/tuning-kernel-for-kubernetes/</guid>
+      <description>Kubernetes의 Pod/container가 cgroup으로 isolation된다고 하더라도 host의 conntrack table을 공유할 수 밖에 없으므로 동시 접속자 수가 많고 짧은 응답시간이 요구되는 시스템의 경우 관련 파라미터들의 튜닝이 필요하다. 또한 성능을 위해서 ingress-controller를 hostNetwork로 설정하고 별도의 노드로 구성하였다면 다양한 커널 파라미터들을 튜닝하여 성능 개선을 할 수 있다.
+Netfilter modules nf_conntrack /proc/sys/net/netfilter/nf_conntrack_max는 NAT/SNAT(또는 IP당 연결 갯수 제한을 위해) 연결을 tracking하는 table의 최대 연결 갯수를 정하는 값인데, Load test나 많은 연결을 요할때 병목이 될 수 있다.</description>
+    </item>
+    
+  </channel>
+</rss>
