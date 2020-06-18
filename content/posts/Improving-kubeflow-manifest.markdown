@@ -17,7 +17,7 @@ highlight = "true"
 Kubeflow가 버전 1.0을 찍긴 했지만 아직은 부족한 부분이 좀(?) 있다.
 kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금까지 customizing했던 부분들을 적용하여 kubeflow/manifests 를 개선해 보았다.
 
-### 개선한 사항
+### 개선 항목
 
 - Pipeline 0.5.1 로 업그레이드
 - KFServing 0.3 으로 업그레이드
@@ -31,7 +31,7 @@ Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
 
 ### 설치 방법
 
-설치 방법은 기존과 같다. manifest 파일만 수정한 파일로 지정하시면 된다.
+설치 방법은 기존과 같다. manifest 파일만 수정한 파일로 지정하면 된다.
 
 - 일반 설치
 
