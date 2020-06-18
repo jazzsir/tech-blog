@@ -11,7 +11,7 @@
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content='Kubeflow가 버전 1.0을 찍긴 했지만 아직은 부족한 부분이 좀(?) 있다. kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금까지 customizing했던 부분들을 적용하여 kubeflow/manifests 를 개선해 보았다.
-개선한 사항  Pipeline 0.5.1 로 업그레이드 KFServing 0.3 으로 업그레이드 kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround) nodeafinity 적용(kubeflow 배포 철학과는 맞지 않지만&hellip;.) Application CR 빠진 부분 추가 중복 지정 부분(namespace 등) 삭제 minio vitualservice 추가  Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
+개선 항목  Pipeline 0.5.1 로 업그레이드 KFServing 0.3 으로 업그레이드 kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround) nodeafinity 적용(kubeflow 배포 철학과는 맞지 않지만&hellip;.) Application CR 빠진 부분 추가 중복 지정 부분(namespace 등) 삭제 minio vitualservice 추가  Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
 설치 방법 설치 방법은 기존과 같다.'>
 <meta name="keywords" content='kubeflow, deep learning, kubernetes, openstack, distributed traning, operator'>
 <meta name="msapplication-TileColor" content="#b91d47">
@@ -28,7 +28,7 @@
 
 <meta property="og:title" content="Improving Kubeflow kfctl_istio_dex.v1.0.2 manifest" />
 <meta property="og:description" content="Kubeflow가 버전 1.0을 찍긴 했지만 아직은 부족한 부분이 좀(?) 있다. kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금까지 customizing했던 부분들을 적용하여 kubeflow/manifests 를 개선해 보았다.
-개선한 사항  Pipeline 0.5.1 로 업그레이드 KFServing 0.3 으로 업그레이드 kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround) nodeafinity 적용(kubeflow 배포 철학과는 맞지 않지만&hellip;.) Application CR 빠진 부분 추가 중복 지정 부분(namespace 등) 삭제 minio vitualservice 추가  Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
+개선 항목  Pipeline 0.5.1 로 업그레이드 KFServing 0.3 으로 업그레이드 kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround) nodeafinity 적용(kubeflow 배포 철학과는 맞지 않지만&hellip;.) Application CR 빠진 부분 추가 중복 지정 부분(namespace 등) 삭제 minio vitualservice 추가  Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
 설치 방법 설치 방법은 기존과 같다." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jazzsir.github.io/posts/improving-kubeflow-manifest/" />
@@ -38,7 +38,7 @@
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Improving Kubeflow kfctl_istio_dex.v1.0.2 manifest"/>
 <meta name="twitter:description" content="Kubeflow가 버전 1.0을 찍긴 했지만 아직은 부족한 부분이 좀(?) 있다. kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금까지 customizing했던 부분들을 적용하여 kubeflow/manifests 를 개선해 보았다.
-개선한 사항  Pipeline 0.5.1 로 업그레이드 KFServing 0.3 으로 업그레이드 kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround) nodeafinity 적용(kubeflow 배포 철학과는 맞지 않지만&hellip;.) Application CR 빠진 부분 추가 중복 지정 부분(namespace 등) 삭제 minio vitualservice 추가  Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
+개선 항목  Pipeline 0.5.1 로 업그레이드 KFServing 0.3 으로 업그레이드 kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround) nodeafinity 적용(kubeflow 배포 철학과는 맞지 않지만&hellip;.) Application CR 빠진 부분 추가 중복 지정 부분(namespace 등) 삭제 minio vitualservice 추가  Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
 설치 방법 설치 방법은 기존과 같다."/>
 
 <meta itemprop="name" content="">
@@ -192,7 +192,7 @@
     <main class="row post-content">
         <p>Kubeflow가 버전 1.0을 찍긴 했지만 아직은 부족한 부분이 좀(?) 있다.
 kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금까지 customizing했던 부분들을 적용하여 kubeflow/manifests 를 개선해 보았다.</p>
-<h3 id="개선한-사항">개선한 사항</h3>
+<h3 id="개선-항목">개선 항목</h3>
 <ul>
 <li>Pipeline 0.5.1 로 업그레이드</li>
 <li>KFServing 0.3 으로 업그레이드</li>
@@ -204,7 +204,7 @@ kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금
 </ul>
 <p>Git repo - <a href="https://github.com/jazzsir/manifests/tree/v1.0.2-branch">https://github.com/jazzsir/manifests/tree/v1.0.2-branch</a></p>
 <h3 id="설치-방법">설치 방법</h3>
-<p>설치 방법은 기존과 같다. manifest 파일만 수정한 파일로 지정하시면 된다.</p>
+<p>설치 방법은 기존과 같다. manifest 파일만 수정한 파일로 지정하면 된다.</p>
 <ul>
 <li>일반 설치</li>
 </ul>
