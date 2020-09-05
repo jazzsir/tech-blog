@@ -1,5 +1,5 @@
 +++
-title = "Improving Kubeflow kfctl_istio_dex.v1.0.2 manifest"
+title = "Improving Kubeflow kfctl_istio_dex.v1.0.2 manifests"
 description = ""
 tags = [
     "Kubernetes",
@@ -14,7 +14,7 @@ categories = [
 highlight = "true"
 +++
 
-Kubeflow가 버전 1.0을 찍긴 했지만 아직은 부족한 부분이 좀(?) 있다.
+Kubeflow가 버전 1.0을 찍긴 했지만 아직은 Immature한 부분이 많다.
 kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금까지 customizing했던 부분들을 적용하여 kubeflow/manifests 를 개선해 보았다.
 
 ### 개선 항목
@@ -22,10 +22,10 @@ kfctl과 KFDef를 분석할 겸해서 kfctl_istio_dex.v1.0.2 기반으로 지금
 - Pipeline 0.5.1 로 업그레이드
 - KFServing 0.3 으로 업그레이드
 - kfserving-ingressgateway 적용 (https://github.com/kubeflow/kfserving/issues/786 로 인한 Workaround)
-- nodeafinity 적용(kubeflow 배포 철학과는  맞지 않지만....)
+- nodeafinity 적용(to preserve GPU resouces)
 - Application CR 빠진 부분 추가
 - 중복 지정 부분(namespace 등) 삭제
-- minio vitualservice 추가
+- minio VitualService 추가
 
 Git repo - https://github.com/jazzsir/manifests/tree/v1.0.2-branch
 
