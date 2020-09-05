@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright> © 2020 jazzsir&#39;s tech blog. Powered by [Hugo](https://github.com/gohugoio/hugo). Theme [Okayish Blog Hugo Theme](https://github.com/kongdivin/hugo-theme-okayish-blog#readme).</copyright>
-    <lastBuildDate>Tue, 17 Sep 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 24 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://jazzsir.github.io/categories/openstack/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Kubernetes Korea User Group Meet-up 발표자료(Cluster-API)</title>
+      <link>https://jazzsir.github.io/posts/cluster-api-presentation-at-meetup/</link>
+      <pubDate>Tue, 24 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://jazzsir.github.io/posts/cluster-api-presentation-at-meetup/</guid>
+      <description>Kubernetes Korea User Group Meet-up 발표자료  Bootstrapping a Kubernetes Cluster on Openstack with Cluster API  </description>
+    </item>
     
     <item>
       <title>Cluster-API for Openstack(CAPO) Sequence diagram - v1alpha2</title>
