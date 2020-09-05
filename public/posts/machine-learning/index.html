@@ -263,7 +263,10 @@ Backpropagation 부분은 Andrew Ng교수님 강의 자료 등 아래 링크를 
 <p><img src="/images/hypthesis-matrix-2.png" alt="hypothesis-using-matrix_2"></p>
 <p>위에서 결과 [5, 1]은 앞에 두개 [5, 3]에서 <code>5</code>, [3, 1]에서 <code>1</code>이다.
 instance가 n개 이면 위 예제에서 5대신에 <code>n</code>을 넣으면 된다.</p>
-<h2 id="cost-function-도-간단히-여러개-받아서-yi를-빼고-제곱하면-된다">Cost function 도 간단히 여러개 받아서 y(i)를 빼고 제곱하면 된다.</h2>
+<h2 id="cost-function-1">Cost function</h2>
+<ul>
+<li>이것도 간단히 여러개 받아서 y(i)를 빼고 제곱하면 된다.</li>
+</ul>
 <p><img src="/images/multi-variable-cost-function.png" alt="cost function"></p>
 <h1 id="classification-binary-1-or-0">Classification (Binary 1 or 0)</h1>
 <ul>
@@ -291,7 +294,7 @@ z가 0이하로 작아지면 g(z)는 0에 가까이 가게 된다. (W와 b로 0 
 그래서 만약에 x1, x2 두개의 input이 있다면, H(x1, x2) = g(x1w1 + x2w2 + b)일 것이고,
 뒤에서 설명할 cost function에서 찾은 값이 (-3, 1, 1) 이라면 아래 그래프처럼 Decision Boundary(핑크색 줄)가 결졍되고 이 기준으로 1과 0이 구분 될 것이다.</p>
 <p><img src="/images/logistic-decision-boundary.png" alt="Decision-boundary"></p>
-<h2 id="cost-function-1">Cost function</h2>
+<h2 id="cost-function-2">Cost function</h2>
 <ul>
 <li>기존의 Linear Regression의 Cost function을 그대로 사용할 수 없는 이유
 <ul>
@@ -345,7 +348,7 @@ z가 0이하로 작아지면 g(z)는 0에 가까이 가게 된다. (W와 b로 0 
 </ul>
 <p><img src="/images/multinomial-classification-3.png" alt="multinomial-classification-3"></p>
 <p>Sigmoid함수를 어떻게 적용해야 할까는 다음 참조</p>
-<h2 id="cost-function-2">Cost function</h2>
+<h2 id="cost-function-3">Cost function</h2>
 <p>이제 Cost function을 이용해서 각 Y와 가장 유사한 가설 Hypothesis (Y에 모자를 씌운) 을 찾아야 한다.
 다른말로 해서, 각 Y에 대한 Decision boundary를 찾아야 한다.</p>
 <h3 id="softmax">Softmax</h3>

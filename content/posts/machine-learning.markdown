@@ -98,7 +98,8 @@ Cost function에서 임의의 W와 b를 넣어서 cost를 계산하였다.
 위에서 결과 [5, 1]은 앞에 두개 [5, 3]에서 `5`, [3, 1]에서 `1`이다.
 instance가 n개 이면 위 예제에서 5대신에 `n`을 넣으면 된다.
 
-## Cost function 도 간단히 여러개 받아서 y(i)를 빼고 제곱하면 된다.
+## Cost function
+- 이것도 간단히 여러개 받아서 y(i)를 빼고 제곱하면 된다.
 
 ![cost function](/images/multi-variable-cost-function.png)
 
