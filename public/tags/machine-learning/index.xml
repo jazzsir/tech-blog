@@ -18,7 +18,7 @@
       <pubDate>Thu, 21 Jun 2018 00:00:00 +0000</pubDate>
       
       <guid>https://jazzsir.github.io/posts/machine-learning/</guid>
-      <description>머신러닝/딥러닝의 개념을 이해하기 위해 만든 자료이다. 홍콩과기대 김성훈 교수님의 모두를 위한 머신러닝과 딥러닝의 강의를 바탕으로 만들어졌고, Backpropagation 부분은 Andrew Ng교수님 강의 자료 등 아래 링크를 참조하였다.
+      <description>머신러닝/딥러닝의 개념을 이해하기 위해 만든 자료이다. 홍콩과기대 김성훈 교수님의 모두를 위한 머신러닝과 딥러닝의 강의를 바탕으로 만들어졌고, Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 참조하였다.
  Machine Learning — Andrew Ng, Stanford University CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1 https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/  Linear Regression 공부를 많이 할 수록 성적이 올라간다.
 Hypothesis Hypothesis는 아래와 같이 1차 방정식이다.
 H(x) = Wx + b 즉, 위의 그래프 처럼, Data points에서 가장 cost가 적은 Linear한 함수를 만들기 위해 W와 b를 찾아야 한다.</description>

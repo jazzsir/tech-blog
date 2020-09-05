@@ -13,7 +13,7 @@ highlight = "true"
 +++
 머신러닝/딥러닝의 개념을 이해하기 위해 만든 자료이다.
 홍콩과기대 김성훈 교수님의 [모두를 위한 머신러닝과 딥러닝의 강의](http://hunkim.github.io/ml/)를 바탕으로 만들어졌고,
-Backpropagation 부분은 Andrew Ng교수님 강의 자료 등 아래 링크를 참조하였다.
+Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 참조하였다.
 1. [Machine Learning — Andrew Ng, Stanford University](https://www.youtube.com/watch?v=0twSSFZN9Mc&t=176s&index=51&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN)
 2. [CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1](https://www.youtube.com/watch?v=i94OvYb6noo)
 3. https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
