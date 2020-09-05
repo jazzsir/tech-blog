@@ -18,8 +18,4 @@ highlight = "true"
 
 - Bootstrapping a Kubernetes Cluster on Openstack with Cluster API
 
-<object data="/images/cluster-api.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="/images/cluster-api.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="/images/cluster-api.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
+<embed src="/images/cluster-api.pdf" width="500" height="375" type="application/pdf">
