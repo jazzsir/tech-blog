@@ -11,9 +11,7 @@
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content='머신러닝/딥러닝의 개념을 이해하기 위해 만든 자료이다. 홍콩과기대 김성훈 교수님의 모두를 위한 머신러닝과 딥러닝의 강의를 바탕으로 만들어졌고, Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 참조하였다.
- Machine Learning — Andrew Ng, Stanford University CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1 https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/  Linear Regression 공부를 많이 할 수록 성적이 올라간다.
-Hypothesis Hypothesis는 아래와 같이 1차 방정식이다.
-H(x) = Wx &#43; b 즉, 위의 그래프 처럼, Data points에서 가장 cost가 적은 Linear한 함수를 만들기 위해 W와 b를 찾아야 한다.'>
+ Machine Learning — Andrew Ng, Stanford University CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1 https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/  Supervised/Unsupervised learning Supervised learning  labeled examples - training set  Types of supervised learning  Regression: the output variable is a real or continuous value, such as &ldquo;salary&rdquo; or &ldquo;weight&rdquo;.'>
 <meta name="keywords" content='kubeflow, deep learning, kubernetes, openstack, distributed traning, operator'>
 <meta name="msapplication-TileColor" content="#b91d47">
 <meta name="theme-color" content="#ffffff">
@@ -29,9 +27,7 @@ H(x) = Wx &#43; b 즉, 위의 그래프 처럼, Data points에서 가장 cost가
 
 <meta property="og:title" content="Machine learning" />
 <meta property="og:description" content="머신러닝/딥러닝의 개념을 이해하기 위해 만든 자료이다. 홍콩과기대 김성훈 교수님의 모두를 위한 머신러닝과 딥러닝의 강의를 바탕으로 만들어졌고, Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 참조하였다.
- Machine Learning — Andrew Ng, Stanford University CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1 https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/  Linear Regression 공부를 많이 할 수록 성적이 올라간다.
-Hypothesis Hypothesis는 아래와 같이 1차 방정식이다.
-H(x) = Wx &#43; b 즉, 위의 그래프 처럼, Data points에서 가장 cost가 적은 Linear한 함수를 만들기 위해 W와 b를 찾아야 한다." />
+ Machine Learning — Andrew Ng, Stanford University CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1 https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/  Supervised/Unsupervised learning Supervised learning  labeled examples - training set  Types of supervised learning  Regression: the output variable is a real or continuous value, such as &ldquo;salary&rdquo; or &ldquo;weight&rdquo;." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://jazzsir.github.io/posts/machine-learning/" />
 <meta property="article:published_time" content="2018-06-21T00:00:00+00:00" />
@@ -40,9 +36,7 @@ H(x) = Wx &#43; b 즉, 위의 그래프 처럼, Data points에서 가장 cost가
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Machine learning"/>
 <meta name="twitter:description" content="머신러닝/딥러닝의 개념을 이해하기 위해 만든 자료이다. 홍콩과기대 김성훈 교수님의 모두를 위한 머신러닝과 딥러닝의 강의를 바탕으로 만들어졌고, Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 참조하였다.
- Machine Learning — Andrew Ng, Stanford University CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1 https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/  Linear Regression 공부를 많이 할 수록 성적이 올라간다.
-Hypothesis Hypothesis는 아래와 같이 1차 방정식이다.
-H(x) = Wx &#43; b 즉, 위의 그래프 처럼, Data points에서 가장 cost가 적은 Linear한 함수를 만들기 위해 W와 b를 찾아야 한다."/>
+ Machine Learning — Andrew Ng, Stanford University CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1 https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/  Supervised/Unsupervised learning Supervised learning  labeled examples - training set  Types of supervised learning  Regression: the output variable is a real or continuous value, such as &ldquo;salary&rdquo; or &ldquo;weight&rdquo;."/>
 
 <meta itemprop="name" content="">
 <meta itemprop="description" content="">
@@ -201,6 +195,21 @@ Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 �
 <li><a href="https://www.youtube.com/watch?v=i94OvYb6noo">CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1</a></li>
 <li><a href="https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/">https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/</a></li>
 </ol>
+<h1 id="supervisedunsupervised-learning">Supervised/Unsupervised learning</h1>
+<h2 id="supervised-learning">Supervised learning</h2>
+<ul>
+<li>labeled examples - training set</li>
+</ul>
+<h3 id="types-of-supervised-learning">Types of supervised learning</h3>
+<ul>
+<li>Regression: the output variable is a real or continuous value, such as &ldquo;salary&rdquo; or &ldquo;weight&rdquo;.</li>
+<li>Binary classification: Pass/non-pass based on time spent</li>
+<li>Multi-label classification: Letter grade (A,B,C,E and F) based on time spent</li>
+</ul>
+<h2 id="unsupervised-learning">Unsupervised learning</h2>
+<ul>
+<li>un-labled data: Google news grouping, Word clustering&hellip;</li>
+</ul>
 <h1 id="linear-regression">Linear Regression</h1>
 <p>공부를 많이 할 수록 성적이 올라간다.</p>
 <p><img src="/images/simple-linear.png" alt="gradient"></p>
