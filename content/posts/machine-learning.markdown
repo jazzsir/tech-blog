@@ -18,6 +18,21 @@ Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 �
 2. [CS231n Winter 2016: Lecture 4: Backpropagation, Neural Networks 1](https://www.youtube.com/watch?v=i94OvYb6noo)
 3. https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
 
+
+# Supervised/Unsupervised learning
+
+## Supervised learning
+- labeled examples - training set
+
+### Types of supervised learning
+- Regression: the output variable is a real or continuous value, such as "salary" or "weight".
+- Binary classification: Pass/non-pass based on time spent
+- Multi-label classification: Letter grade (A,B,C,E and F) based on time spent
+
+## Unsupervised learning
+- un-labled data: Google news grouping, Word clustering...
+    
+
 # Linear Regression
 
 공부를 많이 할 수록 성적이 올라간다.
