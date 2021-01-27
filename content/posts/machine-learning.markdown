@@ -41,7 +41,7 @@ Backpropagation 부분은 Andrew Ng교수님 강의 자료와 아래 링크를 �
 
 ## Hypothesis
 
-Hypothesis는 아래와 같이 1차 방정식이다.
+Hypothesis는 아래와 같다.
 ```
 H(x) = Wx + b
 ```
